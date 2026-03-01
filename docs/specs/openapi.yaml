@@ -1,0 +1,1085 @@
+openapi: 3.0.3
+info:
+  title: Lexio API
+  description: API para la plataforma de gestión legal Lexio — módulo de Documentos del Expediente
+  version: 1.0.0
+  contact:
+    name: Lexio Engineering
+
+servers:
+  - url: http://localhost:3000/api/v1
+    description: Local development
+
+paths:
+  /auth/sessions:
+    post:
+      tags: [Auth]
+      summary: Authenticate a user and create a session
+      operationId: createSession
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginInput'
+      responses:
+        '201':
+          description: Session created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '401':
+          description: Invalid email or password
+
+  /auth/providers/current:
+    get:
+      tags: [Auth]
+      summary: Get the active authentication provider configuration
+      operationId: getCurrentAuthProviderConfig
+      responses:
+        '200':
+          description: Current auth mode and enabled providers
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthProviderConfig'
+
+  /auth/password-resets:
+    post:
+      tags: [Auth]
+      summary: Request a self-service password reset email for a local user
+      operationId: createPasswordReset
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordResetRequestInput'
+      responses:
+        '201':
+          description: Reset request accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+
+  /auth/password-resets/confirm:
+    post:
+      tags: [Auth]
+      summary: Complete a self-service password reset using an email token
+      operationId: confirmPasswordReset
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordResetConfirmInput'
+      responses:
+        '201':
+          description: Password updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '400':
+          description: Invalid or expired reset token
+
+  /auth/oidc/authorize:
+    get:
+      tags: [Auth]
+      summary: Start the OIDC login flow
+      operationId: authorizeWithOidc
+      responses:
+        '302':
+          description: Redirects the browser to the configured identity provider
+        '404':
+          description: OIDC login is not configured
+
+  /auth/oidc/callback:
+    get:
+      tags: [Auth]
+      summary: Complete the OIDC login flow
+      operationId: handleOidcCallback
+      parameters:
+        - name: code
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: state
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '302':
+          description: Redirects the browser back to the configured application URL
+        '400':
+          description: Invalid OIDC callback state
+        '502':
+          description: Identity provider exchange failed
+
+  /auth/sessions/current:
+    delete:
+      tags: [Auth]
+      summary: Delete the current session
+      operationId: deleteCurrentSession
+      responses:
+        '200':
+          description: Session deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionDeleteResponse'
+
+  /users/me:
+    get:
+      tags: [Users]
+      summary: Get the current application user
+      operationId: getCurrentUser
+      responses:
+        '200':
+          description: Current user profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CurrentUser'
+        '401':
+          description: Active session required
+        '403':
+          description: The current session cannot read the current user profile
+
+  /users:
+    get:
+      tags: [Users]
+      summary: List application users
+      operationId: listUsers
+      responses:
+        '200':
+          description: Users visible to an administrator
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CurrentUser'
+        '401':
+          description: Active session required
+        '403':
+          description: Administrator privileges required
+    post:
+      tags: [Users]
+      summary: Create an application user
+      operationId: createUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserInput'
+      responses:
+        '201':
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CurrentUser'
+        '400':
+          description: Validation error
+        '401':
+          description: Active session required
+        '403':
+          description: Administrator privileges required
+        '409':
+          description: Email already in use
+
+  /users/{userId}:
+    patch:
+      tags: [Users]
+      summary: Update an application user
+      operationId: updateUser
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserInput'
+      responses:
+        '200':
+          description: User updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CurrentUser'
+        '400':
+          description: Validation error
+        '401':
+          description: Active session required
+        '403':
+          description: Administrator privileges required
+        '404':
+          description: User not found
+        '409':
+          description: Email already in use
+
+  /users/{userId}/password:
+    put:
+      tags: [Users]
+      summary: Update a local user's password
+      operationId: updateUserPassword
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetPasswordInput'
+      responses:
+        '200':
+          description: Password updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CurrentUser'
+        '400':
+          description: Validation error
+        '401':
+          description: Active session required
+        '403':
+          description: Administrator privileges required
+        '404':
+          description: User not found
+
+  /users/{userId}/case-assignments:
+    get:
+      tags: [Users]
+      summary: List case assignments for a user
+      operationId: listUserCaseAssignments
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Case assignments for the selected user
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CaseAssignment'
+        '401':
+          description: Active session required
+        '403':
+          description: Administrator privileges required
+
+  /users/{userId}/case-assignments/events:
+    get:
+      tags: [Users]
+      summary: List audit events for a user's case assignments
+      operationId: listUserCaseAssignmentEvents
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Case assignment audit events for the selected user
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AuditEvent'
+        '401':
+          description: Active session required
+        '403':
+          description: Administrator privileges required
+
+  /users/{userId}/case-assignments/{caseId}:
+    put:
+      tags: [Users]
+      summary: Create or update a user's assignment for a case
+      operationId: upsertUserCaseAssignment
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - $ref: '#/components/parameters/caseId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CaseAssignmentInput'
+      responses:
+        '200':
+          description: Assignment stored successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaseAssignment'
+        '401':
+          description: Active session required
+        '403':
+          description: Administrator privileges required
+        '404':
+          description: User or case not found
+    delete:
+      tags: [Users]
+      summary: Remove a user's assignment from a case
+      operationId: deleteUserCaseAssignment
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - $ref: '#/components/parameters/caseId'
+      responses:
+        '200':
+          description: Assignment removed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '401':
+          description: Active session required
+        '403':
+          description: Administrator privileges required
+        '404':
+          description: Assignment not found
+
+  /cases:
+    get:
+      tags: [Cases]
+      summary: List cases visible to the current user
+      operationId: listCases
+      responses:
+        '200':
+          description: Cases accessible to the current session
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CaseHeader'
+        '401':
+          description: Active session required
+
+  /cases/{caseId}:
+    get:
+      tags: [Cases]
+      summary: Get case header information
+      operationId: getCaseHeader
+      parameters:
+        - $ref: '#/components/parameters/caseId'
+      responses:
+        '200':
+          description: Case details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaseHeader'
+        '401':
+          description: Active session required
+        '403':
+          description: The current account is not assigned to the case
+        '404':
+          description: Case not found
+
+  /cases/{caseId}/document-deliveries:
+    get:
+      tags: [Document Deliveries]
+      summary: List all document deliveries for a case
+      operationId: listDocumentDeliveries
+      parameters:
+        - $ref: '#/components/parameters/caseId'
+      responses:
+        '200':
+          description: Array of document deliveries (newest first)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DocumentDelivery'
+        '401':
+          description: Active session required
+        '403':
+          description: The current account is not assigned to the case
+
+    post:
+      tags: [Document Deliveries]
+      summary: Upload a document delivery to a case
+      operationId: createDocumentDelivery
+      parameters:
+        - $ref: '#/components/parameters/caseId'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [title, description, category, relatedPhase, files]
+              properties:
+                title:
+                  type: string
+                  description: Title of the document delivery
+                  example: Poder Notarial
+                description:
+                  type: string
+                  description: Context description for the delivery
+                  example: Documentos de representación legal
+                category:
+                  type: string
+                  description: Legal category for the delivery
+                  example: Pruebas documentales
+                relatedPhase:
+                  type: string
+                  description: Case phase associated with the delivery
+                  example: Fase probatoria
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+                  description: Files to upload (max 20, max 50MB each)
+      responses:
+        '201':
+          description: Delivery created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentDelivery'
+        '400':
+          description: Validation error (missing files, unsupported MIME, too large)
+        '401':
+          description: Active session required
+        '403':
+          description: The current role or case assignment cannot register document deliveries
+
+  /cases/{caseId}/activities:
+    get:
+      tags: [Activities]
+      summary: List case activities
+      operationId: listCaseActivities
+      parameters:
+        - $ref: '#/components/parameters/caseId'
+      responses:
+        '200':
+          description: Array of activities ordered by recency
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CaseActivity'
+        '401':
+          description: Active session required
+        '403':
+          description: The current account is not assigned to the case
+    post:
+      tags: [Activities]
+      summary: Create a case activity entry
+      operationId: createCaseActivity
+      parameters:
+        - $ref: '#/components/parameters/caseId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CaseActivityInput'
+      responses:
+        '201':
+          description: Activity created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaseActivity'
+        '401':
+          description: Active session required
+        '403':
+          description: The current role or case assignment cannot log case activity
+
+  /cases/{caseId}/parties:
+    get:
+      tags: [Parties]
+      summary: List all parties and relevant actors for a case
+      operationId: listCaseParties
+      parameters:
+        - $ref: '#/components/parameters/caseId'
+      responses:
+        '200':
+          description: Array of parties ordered for UI display
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CaseParty'
+        '401':
+          description: Active session required
+        '403':
+          description: The current account is not assigned to the case
+        '404':
+          description: Case not found
+    post:
+      tags: [Parties]
+      summary: Create a party for a case
+      operationId: createCaseParty
+      parameters:
+        - $ref: '#/components/parameters/caseId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CasePartyInput'
+      responses:
+        '201':
+          description: Party created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaseParty'
+        '401':
+          description: Active session required
+        '403':
+          description: The current role or case assignment cannot create parties
+
+  /cases/{caseId}/parties/order:
+    patch:
+      tags: [Parties]
+      summary: Update the display order of parties for a case
+      operationId: updateCasePartyOrder
+      parameters:
+        - $ref: '#/components/parameters/caseId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReorderPartiesInput'
+      responses:
+        '200':
+          description: Reordered parties
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CaseParty'
+        '401':
+          description: Active session required
+        '403':
+          description: The current role or case assignment cannot reorder parties for the case
+        '404':
+          description: One or more parties were not found
+
+  /cases/{caseId}/parties/{partyId}:
+    patch:
+      tags: [Parties]
+      summary: Update a case party
+      operationId: updateCaseParty
+      parameters:
+        - $ref: '#/components/parameters/caseId'
+        - name: partyId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CasePartyInput'
+      responses:
+        '200':
+          description: Party updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaseParty'
+        '401':
+          description: Active session required
+        '403':
+          description: The current role or case assignment cannot update the party
+        '404':
+          description: Party not found
+    delete:
+      tags: [Parties]
+      summary: Delete a case party
+      operationId: deleteCaseParty
+      parameters:
+        - $ref: '#/components/parameters/caseId'
+        - name: partyId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Party deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '401':
+          description: Active session required
+        '403':
+          description: The current role or case assignment cannot delete the party
+        '404':
+          description: Party not found
+
+components:
+  parameters:
+    caseId:
+      name: caseId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: UUID of the legal case
+
+  schemas:
+    CaseHeader:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        caseNumber:
+          type: string
+          example: EXP-2026-001
+        clientName:
+          type: string
+          example: María González Rodríguez
+        status:
+          type: string
+          enum: [ACTIVE, CLOSED, PENDING, ARCHIVED]
+        stage:
+          type: string
+          example: Fase probatoria
+        responsibleUserName:
+          type: string
+          example: Dr. Carlos Mendoza
+        caseType:
+          type: string
+          example: Civil · Arrendamiento
+        courtName:
+          type: string
+          example: Juzgado 3.º Civil del Distrito Judicial
+        opposingPartyName:
+          type: string
+          example: Inmobiliaria Horizonte S.A. de C.V.
+        nextAction:
+          type: string
+          example: Preparar escrito de ofrecimiento de pruebas y validar anexos
+        nextHearingDate:
+          type: string
+          format: date-time
+          nullable: true
+        currentUserAccessLevel:
+          type: string
+          enum: [OWNER, EDITOR, REVIEWER, VIEWER]
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    DocumentDelivery:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        caseId:
+          type: string
+          format: uuid
+        title:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+        relatedPhase:
+          type: string
+        createdByUserId:
+          type: string
+          format: uuid
+          nullable: true
+        createdByName:
+          type: string
+          nullable: true
+        documents:
+          type: array
+          items:
+            $ref: '#/components/schemas/Document'
+        createdAt:
+          type: string
+          format: date-time
+
+    CaseActivity:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        caseId:
+          type: string
+          format: uuid
+        type:
+          type: string
+          enum: [UPLOAD, NOTE, STATUS_CHANGE, PARTY_ADDED, PARTY_UPDATED, PARTY_REMOVED, SYSTEM]
+        description:
+          type: string
+        metadata:
+          type: string
+          nullable: true
+        authorName:
+          type: string
+        authorAvatar:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+
+    CaseActivityInput:
+      type: object
+      required: [type, description]
+      properties:
+        type:
+          type: string
+          enum: [UPLOAD, NOTE, STATUS_CHANGE, PARTY_ADDED, PARTY_UPDATED, PARTY_REMOVED, SYSTEM]
+        description:
+          type: string
+        metadata:
+          type: string
+        authorName:
+          type: string
+        authorAvatar:
+          type: string
+
+    Document:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        deliveryId:
+          type: string
+          format: uuid
+        originalName:
+          type: string
+        mimeType:
+          type: string
+        sizeBytes:
+          type: integer
+          format: int64
+        storageKey:
+          type: string
+        checksum:
+          type: string
+          description: SHA-256 hash of the file contents
+        uploadedAt:
+          type: string
+          format: date-time
+
+    CaseParty:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        caseId:
+          type: string
+          format: uuid
+        role:
+          type: string
+          example: Contraparte
+        name:
+          type: string
+          example: Inmobiliaria Horizonte S.A. de C.V.
+        detail:
+          type: string
+          nullable: true
+          example: Parte demandada con incidencia directa en la estrategia probatoria.
+        sortOrder:
+          type: integer
+          example: 20
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    CasePartyInput:
+      type: object
+      properties:
+        role:
+          type: string
+          example: Perito
+        name:
+          type: string
+          example: Ing. Laura Salgado
+        detail:
+          type: string
+          example: Perito en valuación designada por la parte actora.
+        sortOrder:
+          type: integer
+          example: 50
+
+    CaseAssignment:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        caseId:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        accessLevel:
+          type: string
+          enum: [OWNER, EDITOR, REVIEWER, VIEWER]
+        assignedByUserId:
+          type: string
+          format: uuid
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    CaseAssignmentInput:
+      type: object
+      required: [accessLevel]
+      properties:
+        accessLevel:
+          type: string
+          enum: [OWNER, EDITOR, REVIEWER, VIEWER]
+
+    ReorderPartiesInput:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            type: object
+            required: [id, sortOrder]
+            properties:
+              id:
+                type: string
+                format: uuid
+              sortOrder:
+                type: integer
+                example: 20
+
+    LoginInput:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+
+    SessionResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        expiresAt:
+          type: string
+          format: date-time
+
+    LoginResponse:
+      allOf:
+        - $ref: '#/components/schemas/SessionResponse'
+        - type: object
+          properties:
+            user:
+              $ref: '#/components/schemas/CurrentUser'
+
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+
+    SessionDeleteResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+        - type: object
+          properties:
+            redirectUrl:
+              type: string
+              nullable: true
+              example: https://idp.example.com/logout?post_logout_redirect_uri=http%3A%2F%2Flocalhost%3A4200%2F
+
+    CurrentUser:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        fullName:
+          type: string
+          example: Dr. Carlos Mendoza
+        roleTitle:
+          type: string
+          example: Abogado Senior
+        email:
+          type: string
+          example: carlos.mendoza@lexio.local
+        authProvider:
+          type: string
+          enum: [LOCAL, OIDC]
+        roleKey:
+          type: string
+          enum: [PLATFORM_ADMIN, LEGAL_MANAGER, LEGAL_OPERATOR, LEGAL_REVIEWER, LEGAL_VIEWER]
+        isAdmin:
+          type: boolean
+        isActive:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    AuthProviderConfig:
+      type: object
+      properties:
+        mode:
+          type: string
+          enum: [LOCAL, HYBRID, OIDC_ONLY]
+        oidcEnabled:
+          type: boolean
+        providerLabel:
+          type: string
+          example: SSO del despacho
+        localEnabled:
+          type: boolean
+        passwordResetEnabled:
+          type: boolean
+
+    CreateUserInput:
+      type: object
+      required: [fullName, roleTitle, email]
+      properties:
+        fullName:
+          type: string
+          example: Lic. Ana Ramírez
+        roleTitle:
+          type: string
+          example: Asociada Procesal
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+          minLength: 8
+        authProvider:
+          type: string
+          enum: [LOCAL, OIDC]
+        roleKey:
+          type: string
+          enum: [PLATFORM_ADMIN, LEGAL_MANAGER, LEGAL_OPERATOR, LEGAL_REVIEWER, LEGAL_VIEWER]
+        isAdmin:
+          type: boolean
+        isActive:
+          type: boolean
+
+    UpdateUserInput:
+      type: object
+      properties:
+        fullName:
+          type: string
+        roleTitle:
+          type: string
+        email:
+          type: string
+          format: email
+        authProvider:
+          type: string
+          enum: [LOCAL, OIDC]
+        roleKey:
+          type: string
+          enum: [PLATFORM_ADMIN, LEGAL_MANAGER, LEGAL_OPERATOR, LEGAL_REVIEWER, LEGAL_VIEWER]
+        isAdmin:
+          type: boolean
+        isActive:
+          type: boolean
+
+    ResetPasswordInput:
+      type: object
+      required: [newPassword]
+      properties:
+        newPassword:
+          type: string
+          format: password
+          minLength: 8
+
+    PasswordResetRequestInput:
+      type: object
+      required: [email]
+      properties:
+        email:
+          type: string
+          format: email
+
+    PasswordResetConfirmInput:
+      type: object
+      required: [token, newPassword]
+      properties:
+        token:
+          type: string
+        newPassword:
+          type: string
+          format: password
+          minLength: 8
