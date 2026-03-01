@@ -1,0 +1,193 @@
+<div class="modal-backdrop" (click)="requestClose()" role="presentation">
+  <section
+    class="modal animate-slide-up"
+    (click)="$event.stopPropagation()"
+    (keydown.escape)="requestClose()"
+    tabindex="-1"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="upload-title"
+    data-testid="upload-modal"
+  >
+    <header class="modal-header">
+      <div>
+        <p class="modal-kicker">Nueva entrega documental</p>
+        <h2 id="upload-title">Agregar archivos al expediente</h2>
+        <p class="modal-subtitle">
+          El usuario ve archivos; la auditoría conserva el contexto de esta entrega.
+        </p>
+      </div>
+      <button class="close-btn" type="button" (click)="requestClose()" aria-label="Cerrar">
+        ×
+      </button>
+    </header>
+
+    <div class="modal-layout">
+      <div class="modal-main">
+        @if (uploadError) {
+          <div class="feedback feedback--error" role="alert" data-testid="upload-error">
+            <strong>La entrega no pudo completarse.</strong>
+            <span>{{ uploadError }}</span>
+          </div>
+        }
+
+        <label class="field">
+          <span class="field-label">Nombre de la entrega</span>
+          <input
+            type="text"
+            [(ngModel)]="title"
+            class="field-input"
+            placeholder="Ej. Pruebas documentales, Poder notarial, Contestación"
+            data-testid="upload-title-input"
+          />
+          <span class="field-hint">Usa un nombre que ayude a entender por qué se agregaron estos archivos.</span>
+        </label>
+
+        <label class="field">
+          <span class="field-label">Contexto jurídico</span>
+          <textarea
+            [(ngModel)]="description"
+            rows="4"
+            class="field-input field-textarea"
+            placeholder="Resume qué contienen los archivos, para qué fase aplican y cualquier nota que deba conservarse en auditoría."
+            data-testid="upload-description-input"
+          ></textarea>
+        </label>
+
+        <div class="field-grid">
+          <label class="field">
+            <span class="field-label">Categoría documental</span>
+            <select
+              [(ngModel)]="category"
+              class="field-input"
+              data-testid="upload-category-select"
+            >
+              @for (option of categories; track option) {
+                <option [value]="option">{{ option }}</option>
+              }
+            </select>
+          </label>
+
+          <label class="field">
+            <span class="field-label">Fase relacionada</span>
+            <select
+              [(ngModel)]="relatedPhase"
+              class="field-input"
+              data-testid="upload-phase-select"
+            >
+              @for (option of phases; track option) {
+                <option [value]="option">{{ option }}</option>
+              }
+            </select>
+          </label>
+        </div>
+
+        <div
+          class="dropzone"
+          [class.dropzone--dragover]="isDragOver"
+          [class.dropzone--disabled]="uploading"
+          (dragover)="onDragOver($event)"
+          (dragleave)="isDragOver = false"
+          (drop)="onDrop($event)"
+          (click)="!uploading && fileInput.click()"
+          role="button"
+          tabindex="0"
+          (keydown.enter)="!uploading && fileInput.click()"
+          (keydown.space)="!uploading && fileInput.click()"
+        >
+          <input
+            #fileInput
+            type="file"
+            multiple
+            class="file-input"
+            (change)="onFileSelect($event)"
+            [disabled]="uploading"
+            data-testid="upload-file-input"
+          />
+          <div class="dropzone-copy">
+            <span class="dropzone-title">Arrastra archivos o selecciónalos desde tu equipo</span>
+            <span class="dropzone-text">Hasta 20 archivos por entrega, máximo 50 MB cada uno.</span>
+          </div>
+        </div>
+
+        @if (selectedFiles.length > 0) {
+          <section class="selection-panel">
+            <div class="selection-header">
+              <div>
+                <strong>{{ selectedFiles.length }} archivo{{ selectedFiles.length === 1 ? '' : 's' }}</strong>
+                <span>{{ getTotalSize() }}</span>
+              </div>
+              <button type="button" class="ghost-btn" (click)="clearFiles()" [disabled]="uploading">
+                Limpiar lista
+              </button>
+            </div>
+
+            <div class="selection-list">
+              @for (file of selectedFiles; track trackFile(file)) {
+                <div class="selection-item" [class.selection-item--error]="!!getFileError(file)">
+                  <div class="selection-meta">
+                    <span class="selection-name">{{ file.name }}</span>
+                    <span class="selection-detail">
+                      {{ getFileTypeLabel(file) }} · {{ formatSize(file.size) }}
+                      @if (getFileError(file)) {
+                        · <span class="error-text">{{ getFileError(file) }}</span>
+                      }
+                    </span>
+                  </div>
+                  <button type="button" class="icon-btn" (click)="removeFile(file)" [disabled]="uploading" aria-label="Eliminar archivo">
+                    ×
+                  </button>
+                </div>
+              }
+            </div>
+          </section>
+        }
+      </div>
+
+      <aside class="modal-aside">
+        <div class="aside-card aside-card--accent">
+          <span class="aside-label">Qué verá el usuario</span>
+          <p>Una biblioteca de archivos clara y rápida de escanear.</p>
+        </div>
+        <div class="aside-card">
+          <span class="aside-label">Qué queda en auditoría</span>
+          <p>Nombre de la entrega, contexto, fecha, responsable y archivos relacionados.</p>
+        </div>
+        <div class="aside-card">
+          <span class="aside-label">Recomendación</span>
+          <p>Describe la fase, el objetivo procesal y cualquier nota útil para el equipo.</p>
+        </div>
+      </aside>
+    </div>
+
+    <footer class="modal-footer">
+      <div class="progress-state" aria-live="polite">
+        @if (uploading) {
+          <div class="progress-bar" aria-hidden="true">
+            <span class="progress-fill" [style.width.%]="uploadProgress"></span>
+          </div>
+          <span>Subiendo {{ uploadProgress }}%</span>
+        } @else {
+          <span>La plataforma registrará esta entrega en el historial del expediente.</span>
+        }
+      </div>
+
+      <div class="footer-actions">
+        @if (uploading) {
+          <button type="button" class="btn-secondary" (click)="cancelUpload.emit()">Cancelar subida</button>
+        } @else {
+          <button type="button" class="btn-secondary" (click)="requestClose()">Cerrar</button>
+        }
+        <button
+          type="button"
+          class="btn-primary"
+          (click)="submit()"
+          [disabled]="!isValid() || uploading"
+          data-testid="upload-submit"
+        >
+          {{ uploading ? 'Subiendo…' : 'Guardar entrega' }}
+        </button>
+      </div>
+    </footer>
+  </section>
+</div>

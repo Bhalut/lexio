@@ -1,0 +1,57 @@
+<button
+  class="doc-row"
+  [style.animation-delay]="index * 40 + 'ms'"
+  (click)="selectDoc.emit(doc)"
+  [attr.aria-label]="'Ver detalles de ' + doc.originalName"
+>
+  <div class="doc-icon" [class]="'icon-' + getFileColor(doc.mimeType)">
+    <span [innerHTML]="getFileIcon(doc.mimeType)"></span>
+  </div>
+  <div class="doc-main">
+    <span class="doc-name">{{ doc.originalName }}</span>
+    <span class="doc-context">
+      {{ doc.deliveryTitle }}
+      <span class="doc-sep">·</span>
+      {{ doc.deliveryCategory }}
+      <span class="doc-sep">·</span>
+      {{ doc.deliveryRelatedPhase }}
+    </span>
+  </div>
+  <div class="doc-badges">
+    <span
+      class="type-badge"
+      [class]="'badge-' + getFileColor(doc.mimeType)"
+    >
+      {{ getFileTypeLabel(doc.mimeType) }}
+    </span>
+    <span class="size-badge">{{ formatSize(doc.sizeBytes) }}</span>
+  </div>
+  <div class="doc-actions">
+    <span class="action-btn download" aria-hidden="true" title="Descargar documento">
+      <svg
+        width="15"
+        height="15"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+        <polyline points="7 10 12 15 17 10" />
+        <line x1="12" y1="15" x2="12" y2="3" />
+      </svg>
+    </span>
+    <span class="action-btn detail" aria-hidden="true" title="Ver detalles">
+      <svg
+        width="15"
+        height="15"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <polyline points="9 18 15 12 9 6" />
+      </svg>
+    </span>
+  </div>
+</button>

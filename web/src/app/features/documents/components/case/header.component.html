@@ -1,0 +1,83 @@
+<nav class="breadcrumb" aria-label="Navegación del expediente">
+  <a class="breadcrumb-link" routerLink="/">Expedientes</a>
+  <span class="breadcrumb-separator">/</span>
+  <span class="breadcrumb-current">{{ caseData?.caseNumber || 'Cargando…' }}</span>
+</nav>
+
+<section class="case-header">
+  <div class="case-backdrop"></div>
+
+  <div class="case-identity">
+    <div class="case-kicker">Centro del expediente</div>
+    <div class="case-title-row">
+      <div>
+        <p class="case-number">{{ caseData?.caseNumber || '—' }}</p>
+        <h1 class="client-name">{{ caseData?.clientName || 'Expediente' }}</h1>
+      </div>
+      <span class="status-badge" [class]="'status-' + getStatusTone(caseData?.status)">
+        <span class="status-dot"></span>
+        {{ getStatusLabel(caseData?.status) }}
+      </span>
+    </div>
+    <p class="case-summary">
+      {{ caseData?.caseType || 'Materia por definir' }}
+      <span class="case-summary-separator">•</span>
+      {{ caseData?.courtName || 'Tribunal pendiente de registrar' }}
+    </p>
+  </div>
+
+  <div class="case-grid">
+    <article class="context-card context-card--highlight stagger-item">
+      <span class="context-label">Etapa actual</span>
+      <strong class="context-value">{{ caseData?.stage || 'Sin etapa registrada' }}</strong>
+      <p class="context-note">Mantiene al equipo alineado sobre el momento procesal real del asunto.</p>
+    </article>
+
+    <article class="context-card stagger-item">
+      <span class="context-label">Próximo paso sugerido</span>
+      <strong class="context-value">{{ caseData?.nextAction || 'Definir siguiente actuación del expediente' }}</strong>
+      <p class="context-note">Usa este bloque para orientar al usuario sin exigir conocimiento previo del flujo.</p>
+    </article>
+
+    <article class="context-card stagger-item">
+      <span class="context-label">Contraparte</span>
+      <strong class="context-value">{{ caseData?.opposingPartyName || 'Sin contraparte registrada' }}</strong>
+      <p class="context-note">Muestra el actor relevante para que el lenguaje de la pantalla sea jurídico y situacional.</p>
+    </article>
+
+    <article class="context-card stagger-item">
+      <span class="context-label">Responsable y agenda</span>
+      <strong class="context-value">{{ caseData?.responsibleUserName || 'Sin responsable asignado' }}</strong>
+      <p class="context-note">
+        @if (caseData?.nextHearingDate) {
+          Próxima audiencia {{ formatDate(caseData?.nextHearingDate) }} · {{ getRelativeTime(caseData?.nextHearingDate) }}
+        } @else {
+          Sin audiencia próxima registrada.
+        }
+      </p>
+    </article>
+  </div>
+
+  <div class="case-footer">
+    <div class="footer-item">
+      <span class="footer-label">Última actualización</span>
+      <span class="footer-value">{{ formatDate(caseData?.updatedAt) }}</span>
+    </div>
+    <div class="footer-item">
+      <span class="footer-label">Creado</span>
+      <span class="footer-value">{{ formatDate(caseData?.createdAt) }}</span>
+    </div>
+    <div class="footer-item">
+      <span class="footer-label">Tu acceso</span>
+      <span class="footer-value">
+        {{ getAccessLabel(caseData?.currentUserAccessLevel) }}
+      </span>
+    </div>
+    <div class="footer-item footer-item--accent">
+      <span class="footer-label">Audiencia</span>
+      <span class="footer-value">
+        {{ caseData?.nextHearingDate ? formatDate(caseData?.nextHearingDate) : 'No programada' }}
+      </span>
+    </div>
+  </div>
+</section>

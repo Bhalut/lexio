@@ -1,1 +1,17 @@
+packages:
+  - 'web'
+  - 'api'
+  - 'web-e2e'
+  - 'api-e2e'
+  - 'libs/**'
+
 autoInstallPeers: true
+
+onlyBuiltDependencies:
+  - '@swc/core'
+  - 'esbuild'
+  - '@parcel/watcher'
+  - 'lmdb'
+  - 'msgpackr-extract'
+  - 'nx'
+  - '@nestjs/core'

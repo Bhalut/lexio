@@ -1,0 +1,66 @@
+<div class="activity-panel" data-testid="activity-panel">
+  <div class="filter-chips">
+    @for (filter of filters; track filter.key) {
+      <button
+        class="chip"
+        [class.active]="activeFilter === filter.key"
+        (click)="activeFilter = filter.key"
+      >
+        {{ filter.label }}
+        <span class="chip-count">{{ getCount(filter.key) }}</span>
+      </button>
+    }
+  </div>
+
+  @if (loading) {
+    <div class="timeline skeleton">
+      <div class="timeline-item skeleton-item">
+        <div class="timeline-marker">
+          <div class="timeline-dot skeleton-dot"></div>
+          <div class="timeline-connector"></div>
+        </div>
+        <div class="timeline-content">
+          <div class="skeleton-line md"></div>
+          <div class="skeleton-line sm"></div>
+        </div>
+      </div>
+      <div class="timeline-item skeleton-item">
+        <div class="timeline-marker">
+          <div class="timeline-dot skeleton-dot"></div>
+          <div class="timeline-connector"></div>
+        </div>
+        <div class="timeline-content">
+          <div class="skeleton-line md"></div>
+          <div class="skeleton-line sm"></div>
+        </div>
+      </div>
+    </div>
+  } @else if (error) {
+    <div class="timeline-empty error">{{ error }}</div>
+  } @else {
+    <!-- Timeline -->
+    <div class="timeline">
+      @for (event of filteredEvents; track event.id; let i = $index) {
+        <div class="timeline-item stagger-item">
+          <div class="timeline-marker">
+            <div class="timeline-dot" [style.background]="event.color"></div>
+            <div class="timeline-connector"></div>
+          </div>
+          <div class="timeline-content">
+            <div class="timeline-event">
+              <span class="event-label" [innerHTML]="event.label"></span>
+            </div>
+            @if (event.detail) {
+              <p class="event-detail">{{ event.detail }}</p>
+            }
+            <span class="event-time">{{ getRelativeTime(event.time) }}</span>
+          </div>
+        </div>
+      }
+
+      @if (filteredEvents.length === 0) {
+        <div class="timeline-empty">No hay actividad de este tipo</div>
+      }
+    </div>
+  }
+</div>

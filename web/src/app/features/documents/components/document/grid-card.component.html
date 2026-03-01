@@ -1,0 +1,22 @@
+<button
+  class="grid-card"
+  [style.animation-delay]="index * 50 + 'ms'"
+  (click)="selectDoc.emit(doc)"
+  [attr.aria-label]="'Ver detalles de ' + doc.originalName"
+>
+  <div class="card-hero" [class]="'hero-' + getFileColor(doc.mimeType)">
+    <span [innerHTML]="getFileIcon(doc.mimeType)"></span>
+    <span class="type-pill">{{ getFileTypeLabel(doc.mimeType) }}</span>
+  </div>
+  <div class="card-body">
+    <span class="card-name" [title]="doc.originalName">{{
+      doc.originalName
+    }}</span>
+    <span class="card-context">{{ doc.deliveryTitle }}</span>
+    <div class="card-meta">
+      <span>{{ formatSize(doc.sizeBytes) }}</span>
+      <span class="meta-dot">·</span>
+      <span>{{ getRelativeTime(doc.deliveryCreatedAt) }}</span>
+    </div>
+  </div>
+</button>

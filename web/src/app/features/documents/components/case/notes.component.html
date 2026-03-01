@@ -1,0 +1,145 @@
+<div class="notes-panel" data-testid="notes-panel">
+  <div class="compose">
+    <div class="compose-input-wrap">
+      <textarea
+        class="compose-input"
+        [(ngModel)]="newNote"
+        [disabled]="!canCreateNotes()"
+        [placeholder]="
+          canCreateNotes()
+            ? 'Agregar nota al expediente...'
+            : currentUser
+              ? 'Tu rol es de solo lectura para notas del expediente...'
+              : 'Selecciona una sesión para registrar notas...'
+        "
+        rows="2"
+        (keydown.meta.enter)="addNote()"
+        (keydown.control.enter)="addNote()"
+        data-testid="note-input"
+      ></textarea>
+      <span class="compose-hint">
+        <span
+          class="compose-count"
+          [class.near-limit]="newNote.length > 450"
+        >
+          {{ newNote.length }}/500
+        </span>
+        · ⌘↵ para enviar
+      </span>
+    </div>
+    <button
+      class="compose-btn"
+      [disabled]="!canCreateNotes() || !newNote.trim()"
+      (click)="addNote()"
+      title="Publicar nota"
+      data-testid="note-submit"
+    >
+      <svg
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <line x1="22" y1="2" x2="11" y2="13" />
+        <polygon points="22 2 15 22 11 13 2 9 22 2" />
+      </svg>
+    </button>
+  </div>
+  <div class="visibility-hint">
+    <svg
+      width="12"
+      height="12"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+    >
+      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+    Visible para todo el equipo del expediente
+  </div>
+  @if (currentUser && canCreateNotes()) {
+    <div class="author-hint">Publicas como {{ currentUser.fullName }} · {{ currentUser.roleTitle }}</div>
+  } @else if (currentUser) {
+    <div class="author-hint">
+      Tu perfil actual puede consultar el historial, pero no crear ni editar notas.
+    </div>
+  } @else {
+    <div class="author-hint">
+      Activa una sesión desde la barra lateral para registrar notas con trazabilidad real.
+    </div>
+  }
+
+  @if (loading) {
+    <div class="notes-list skeleton">
+      <div class="note-card skeleton-item">
+        <div class="skeleton-header">
+          <div class="skeleton-avatar"></div>
+          <div class="skeleton-line sm"></div>
+        </div>
+        <div class="skeleton-line lg"></div>
+        <div class="skeleton-line md"></div>
+      </div>
+      <div class="note-card skeleton-item">
+        <div class="skeleton-header">
+          <div class="skeleton-avatar"></div>
+          <div class="skeleton-line sm"></div>
+        </div>
+        <div class="skeleton-line lg"></div>
+        <div class="skeleton-line md"></div>
+      </div>
+    </div>
+  } @else if (error) {
+    <div class="notes-empty">
+      <div class="empty-icon">!</div>
+      <p>No pudimos cargar las notas</p>
+      <span>{{ error }}</span>
+    </div>
+  } @else {
+    <div class="notes-list" data-testid="notes-list">
+      @for (note of sortedNotes; track note.id; let i = $index) {
+        <div
+          class="note-card stagger-item"
+          [class.pinned]="note.isPinned"
+          data-testid="note-card"
+        >
+          @if (note.isPinned) {
+            <div class="pin-indicator">Fijada</div>
+          }
+          <div class="note-header">
+            <div class="note-author">
+              <span class="author-avatar">{{
+                getInitials(note.authorName)
+              }}</span>
+              <span class="author-name">{{ note.authorName }}</span>
+            </div>
+            <div class="note-actions">
+              <button
+                class="note-action-btn"
+                [title]="note.isPinned ? 'Desfijar' : 'Fijar nota'"
+                [disabled]="!canCreateNotes()"
+                (click)="togglePin(note)"
+              >
+                {{ note.isPinned ? 'Fija' : 'Fijar' }}
+              </button>
+              <span class="note-time">{{
+                getRelativeTime(note.createdAt)
+              }}</span>
+            </div>
+          </div>
+          <p class="note-content">{{ note.content }}</p>
+        </div>
+      }
+
+      @if (sortedNotes.length === 0) {
+        <div class="notes-empty">
+          <p>Sin notas aún</p>
+          <span>Agrega la primera nota para el equipo</span>
+        </div>
+      }
+    </div>
+  }
+</div>

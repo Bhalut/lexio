@@ -1,0 +1,40 @@
+<!-- Mobile hamburger -->
+<button class="hamburger-btn" (click)="toggleSidebar()" aria-label="Abrir menú">
+  <svg
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+  >
+    <line x1="3" y1="6" x2="21" y2="6"></line>
+    <line x1="3" y1="12" x2="21" y2="12"></line>
+    <line x1="3" y1="18" x2="21" y2="18"></line>
+  </svg>
+</button>
+
+<!-- Mobile overlay -->
+@if (sidebarOpen) {
+<div
+  class="sidebar-overlay"
+  (click)="closeSidebar()"
+  (keydown.escape)="closeSidebar()"
+  tabindex="-1"
+  role="presentation"
+></div>
+}
+
+<app-sidebar
+  [class.open]="sidebarOpen"
+  [collapsed]="sidebarCollapsed"
+  (collapsedChange)="onSidebarCollapsedChange($event)"
+  (manageUsersRequested)="openUserAdmin()"
+></app-sidebar>
+<main class="main-content" [class.sidebar-collapsed]="sidebarCollapsed">
+  <router-outlet></router-outlet>
+</main>
+
+@if (userAdminOpen) {
+  <app-user-admin-modal (closeRequested)="closeUserAdmin()"></app-user-admin-modal>
+}

@@ -1,0 +1,396 @@
+<aside class="sidebar" [class.collapsed]="collapsed" data-testid="sidebar">
+      <div class="sidebar-header">
+        <div class="logo">
+          <div class="logo-icon">
+            <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+              <rect width="28" height="28" rx="8" fill="url(#logo-gradient)" />
+              <path
+                d="M8 8h4v12H8V8zm8 4h4v8h-4v-8z"
+                fill="#c8a86f"
+              />
+              <defs>
+                <linearGradient
+                  id="logo-gradient"
+                  x1="0"
+                  y1="0"
+                  x2="28"
+                  y2="28"
+                >
+                  <stop stop-color="#142a42" />
+                  <stop offset="1" stop-color="#203f59" />
+                </linearGradient>
+              </defs>
+            </svg>
+          </div>
+          @if (!collapsed) {
+            <span class="logo-text">Lexio</span>
+          }
+        </div>
+        <button
+          class="collapse-btn"
+          (click)="onToggleCollapse()"
+          [attr.aria-label]="collapsed ? 'Expandir menú' : 'Colapsar menú'"
+        >
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            [class.flipped]="collapsed"
+          >
+            <polyline points="15 18 9 12 15 6" />
+          </svg>
+        </button>
+      </div>
+
+      @if (!collapsed) {
+        <div class="search-wrapper">
+          <div class="search-box">
+            <svg
+              width="15"
+              height="15"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+            <input
+              type="text"
+              placeholder="Buscar expedientes..."
+              class="search-input"
+              disabled
+            />
+            <span class="search-shortcut">⌘K</span>
+          </div>
+        </div>
+      }
+
+      <nav class="sidebar-nav">
+        <div class="nav-section">
+          @if (!collapsed) {
+            <span class="nav-section-title">Principal</span>
+          }
+          @for (item of navItems; track item.label) {
+            <a
+              class="nav-item"
+              [class.active]="item.active"
+              [class.disabled]="item.disabled"
+              [routerLink]="item.disabled ? null : item.route"
+              [attr.tabindex]="item.disabled ? -1 : 0"
+              [attr.title]="collapsed ? item.label : item.disabled ? item.tooltip : null"
+            >
+              <span class="nav-icon" [innerHTML]="item.icon"></span>
+              @if (!collapsed) {
+                <span class="nav-label">{{ item.label }}</span>
+              }
+            </a>
+          }
+        </div>
+      </nav>
+
+      <div class="sidebar-footer">
+        @if (!collapsed) {
+          <button
+            class="help-btn"
+            title="Centro de ayuda"
+            aria-label="Abrir centro de ayuda"
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+              <line x1="12" y1="17" x2="12.01" y2="17" />
+            </svg>
+            <span>Ayuda y soporte</span>
+          </button>
+        }
+        <div
+          class="user-card"
+          (click)="userMenuOpen = !userMenuOpen"
+          (keydown.enter)="userMenuOpen = !userMenuOpen"
+          tabindex="0"
+          role="button"
+          data-testid="current-user-menu"
+        >
+          <div class="user-avatar">{{ getInitials(currentUser?.fullName) }}</div>
+          @if (!collapsed) {
+            <div class="user-info">
+              <span class="user-name">{{ currentUser?.fullName || 'Equipo legal' }}</span>
+              <span class="user-role">{{ currentUser?.roleTitle || 'Sin perfil activo' }}</span>
+            </div>
+            <svg
+              class="user-chevron"
+              [class.rotated]="userMenuOpen"
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          }
+        </div>
+        @if (!collapsed && !currentUser) {
+          <form
+            class="session-empty-state"
+            (ngSubmit)="login()"
+            data-testid="login-form"
+          >
+            <span class="session-label">Iniciar sesión</span>
+            <p class="session-copy">
+              Usa tu identidad corporativa para registrar notas, cargas y cambios del expediente con autoría real.
+            </p>
+            @if (authNotice) {
+              <div class="auth-message auth-message--warning">{{ authNotice }}</div>
+            }
+            @if (loginError) {
+              <div class="auth-message auth-message--error">{{ loginError }}</div>
+            }
+            @if (authConfig.oidcEnabled && authConfig.mode !== 'LOCAL') {
+              <button
+                class="sso-submit"
+                type="button"
+                (click)="startSsoLogin()"
+                [disabled]="authenticating"
+              >
+                Continuar con {{ authConfig.providerLabel }}
+              </button>
+            }
+            @if (authConfig.mode !== 'OIDC_ONLY') {
+              <div class="login-grid">
+                <label class="login-field">
+                  <span>Correo</span>
+                  <input
+                    [(ngModel)]="loginEmail"
+                    (input)="onLoginEmailInput($event)"
+                    name="loginEmail"
+                    type="email"
+                    autocomplete="username"
+                    placeholder="tu.correo@despacho.com"
+                    [disabled]="authenticating"
+                    data-testid="login-email"
+                  />
+                </label>
+                <label class="login-field">
+                  <span>Contraseña</span>
+                  <input
+                    [(ngModel)]="loginPassword"
+                    (input)="onLoginPasswordInput($event)"
+                    name="loginPassword"
+                    type="password"
+                    autocomplete="current-password"
+                    placeholder="Ingresa tu contraseña"
+                    [disabled]="authenticating"
+                    data-testid="login-password"
+                  />
+                </label>
+              </div>
+              <button
+                class="login-submit"
+                type="submit"
+                [disabled]="authenticating || !canLogin()"
+                data-testid="login-submit"
+              >
+                {{ authenticating ? 'Ingresando…' : 'Ingresar con correo' }}
+              </button>
+              @if (authConfig.passwordResetEnabled) {
+                <button class="text-link-btn" type="button" (click)="toggleResetRequest()">
+                  {{ showResetRequest ? 'Ocultar restablecimiento' : 'Olvidé mi contraseña' }}
+                </button>
+              }
+              @if (showResetRequest) {
+                <div class="reset-request-card">
+                  <label class="login-field">
+                    <span>Correo para recuperación</span>
+                    <input
+                      [(ngModel)]="resetEmail"
+                      name="resetEmail"
+                      type="email"
+                      autocomplete="email"
+                      placeholder="tu.correo@despacho.com"
+                      [disabled]="resetSubmitting"
+                    />
+                  </label>
+                  @if (resetRequestError) {
+                    <div class="auth-message auth-message--error">{{ resetRequestError }}</div>
+                  }
+                  @if (resetRequestMessage) {
+                    <div class="auth-message auth-message--success">{{ resetRequestMessage }}</div>
+                  }
+                  <button
+                    class="ghost-submit"
+                    type="button"
+                    [disabled]="resetSubmitting || resetEmail.trim().length === 0"
+                    (click)="requestPasswordReset()"
+                  >
+                    {{ resetSubmitting ? 'Enviando…' : 'Enviar enlace de restablecimiento' }}
+                  </button>
+                </div>
+              }
+            }
+          </form>
+        }
+        @if (userMenuOpen && !collapsed) {
+          <div class="user-menu animate-expand-down">
+            <button class="user-menu-item" disabled>
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                <circle cx="12" cy="7" r="4" />
+              </svg>
+              <span>Mi perfil</span>
+            </button>
+            <button class="user-menu-item" disabled>
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <circle cx="12" cy="12" r="3" />
+                <path
+                  d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"
+                />
+              </svg>
+              <span>Configuración</span>
+            </button>
+            <div class="user-menu-divider"></div>
+            @if (canManageUsers(currentUser)) {
+              <button
+                class="user-menu-item"
+                type="button"
+                (click)="openUserAdmin()"
+                data-testid="open-user-admin"
+              >
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                  <circle cx="8.5" cy="7" r="4" />
+                  <path d="M20 8v6" />
+                  <path d="M23 11h-6" />
+                </svg>
+                <span>Administrar usuarios</span>
+              </button>
+              <div class="user-menu-divider"></div>
+            }
+            @if (currentUser) {
+              <button
+                class="user-menu-item user-menu-item--danger"
+                type="button"
+                (click)="logout()"
+                data-testid="logout-button"
+              >
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                  <polyline points="16 17 21 12 16 7" />
+                  <line x1="21" y1="12" x2="9" y2="12" />
+                </svg>
+                <span>Cerrar sesión</span>
+              </button>
+            }
+          </div>
+        }
+      </div>
+
+      @if (showResetModal) {
+        <div
+          class="reset-modal-shell"
+          (click)="closeResetModal()"
+          (keydown.escape)="closeResetModal()"
+          tabindex="-1"
+          role="presentation"
+        >
+          <section
+            class="reset-modal-card"
+            (click)="$event.stopPropagation()"
+            (keydown)="$event.stopPropagation()"
+            tabindex="-1"
+          >
+            <header>
+              <p class="session-label">Restablecer contraseña</p>
+              <h3>Define una nueva clave de acceso</h3>
+              <p>Este enlace solo funciona una vez y expira rápidamente por seguridad.</p>
+            </header>
+            @if (resetRequestError) {
+              <div class="auth-message auth-message--error">{{ resetRequestError }}</div>
+            }
+            @if (resetRequestMessage) {
+              <div class="auth-message auth-message--success">{{ resetRequestMessage }}</div>
+            }
+            <label class="login-field">
+              <span>Nueva contraseña</span>
+              <input
+                [(ngModel)]="resetNewPassword"
+                name="resetNewPassword"
+                type="password"
+                autocomplete="new-password"
+                [disabled]="resetSubmitting"
+              />
+            </label>
+            <label class="login-field">
+              <span>Confirmar contraseña</span>
+              <input
+                [(ngModel)]="resetConfirmPassword"
+                name="resetConfirmPassword"
+                type="password"
+                autocomplete="new-password"
+                [disabled]="resetSubmitting"
+              />
+            </label>
+            <div class="reset-modal-actions">
+              <button class="ghost-btn" type="button" (click)="closeResetModal()" [disabled]="resetSubmitting">
+                Cancelar
+              </button>
+              <button
+                class="login-submit"
+                type="button"
+                (click)="submitPasswordReset()"
+                [disabled]="resetSubmitting || !canSubmitPasswordReset()"
+              >
+                {{ resetSubmitting ? 'Guardando…' : 'Guardar nueva contraseña' }}
+              </button>
+            </div>
+          </section>
+        </div>
+      }
+    </aside>

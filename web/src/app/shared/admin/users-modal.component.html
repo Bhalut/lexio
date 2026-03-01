@@ -1,0 +1,290 @@
+<div
+      class="modal-shell"
+      (click)="closeRequested.emit()"
+      (keydown.enter)="closeRequested.emit()"
+      (keydown.space)="closeRequested.emit()"
+      tabindex="0"
+      role="button"
+      aria-label="Cerrar administración de usuarios"
+    >
+      <section
+        class="modal-card"
+        (click)="$event.stopPropagation()"
+        (keydown.escape)="closeRequested.emit()"
+        tabindex="0"
+        data-testid="user-admin-modal"
+      >
+        <header class="modal-header">
+          <div>
+            <p class="modal-kicker">Administración</p>
+            <h2>Usuarios y credenciales</h2>
+            <p>
+              Gestiona acceso, proveedor de autenticación y restablecimiento de contraseñas sin depender del seed.
+            </p>
+          </div>
+          <div class="header-actions">
+            <button class="ghost-btn" type="button" (click)="startCreate()">
+              Nuevo usuario
+            </button>
+            <button class="close-btn" type="button" (click)="closeRequested.emit()">
+              Cerrar
+            </button>
+          </div>
+        </header>
+
+        @if (error) {
+          <div class="banner banner--error">{{ error }}</div>
+        }
+        @if (successMessage) {
+          <div class="banner banner--success">{{ successMessage }}</div>
+        }
+
+        <div class="modal-grid">
+          <aside class="user-list">
+            @if (loading) {
+              <div class="empty-state">Cargando usuarios…</div>
+            } @else if (users.length === 0) {
+              <div class="empty-state">No hay usuarios registrados todavía.</div>
+            } @else {
+              @for (user of users; track user.id) {
+                <button
+                  class="user-list-item"
+                  type="button"
+                  [class.active]="selectedUserId === user.id"
+                  (click)="selectUser(user)"
+                  [attr.data-testid]="'user-list-item-' + user.id"
+                >
+                  <div>
+                    <strong>{{ user.fullName }}</strong>
+                    <span>{{ user.roleTitle }}</span>
+                  </div>
+                  <div class="user-flags">
+                    <span class="badge">{{ user.authProvider }}</span>
+                    <span class="badge">{{ getRoleLabel(user.roleKey) }}</span>
+                    @if (user.isAdmin) {
+                      <span class="badge badge--accent">Admin</span>
+                    }
+                    @if (!user.isActive) {
+                      <span class="badge badge--muted">Inactivo</span>
+                    }
+                  </div>
+                </button>
+              }
+            }
+          </aside>
+
+          <div class="editor-card">
+            <div class="editor-header">
+              <div>
+                <strong>{{ selectedUserId ? 'Editar usuario' : 'Crear usuario' }}</strong>
+                <p>
+                  Define el proveedor de acceso, el rol operativo y el estado de la cuenta.
+                </p>
+              </div>
+            </div>
+
+            <div class="form-grid">
+              <label class="field">
+                <span>Nombre completo</span>
+                <input [(ngModel)]="form.fullName" type="text" />
+              </label>
+              <label class="field">
+                <span>Cargo</span>
+                <input [(ngModel)]="form.roleTitle" type="text" />
+              </label>
+            </div>
+
+            <div class="form-grid">
+              <label class="field">
+                <span>Correo</span>
+                <input [(ngModel)]="form.email" type="email" />
+              </label>
+              <label class="field">
+                <span>Proveedor</span>
+                <select [(ngModel)]="form.authProvider">
+                  <option value="LOCAL">Local</option>
+                  <option value="OIDC">SSO / OIDC</option>
+                </select>
+              </label>
+              <label class="field">
+                <span>Acceso</span>
+                <select [(ngModel)]="form.roleKey">
+                  <option value="PLATFORM_ADMIN">Administrador de plataforma</option>
+                  <option value="LEGAL_MANAGER">Responsable legal</option>
+                  <option value="LEGAL_OPERATOR">Operador legal</option>
+                  <option value="LEGAL_REVIEWER">Revisor legal</option>
+                  <option value="LEGAL_VIEWER">Consulta</option>
+                </select>
+              </label>
+            </div>
+
+            @if (!selectedUserId && form.authProvider === 'LOCAL') {
+              <label class="field">
+                <span>Contraseña inicial</span>
+                <input [(ngModel)]="form.password" type="password" />
+              </label>
+            }
+
+            <div class="toggle-row">
+              <label class="toggle">
+                <input [(ngModel)]="form.isActive" type="checkbox" />
+                <span>Cuenta activa</span>
+              </label>
+            </div>
+
+            <div class="actions">
+              <button class="ghost-btn" type="button" (click)="resetEditor()">
+                Restablecer
+              </button>
+              <button
+                class="primary-btn"
+                type="button"
+                [disabled]="saving || !isFormValid()"
+                (click)="saveUser()"
+              >
+                {{ saving ? 'Guardando…' : selectedUserId ? 'Guardar cambios' : 'Crear usuario' }}
+              </button>
+            </div>
+
+            @if (selectedUserId) {
+              <div class="password-card">
+                <div>
+                  <strong>Restablecer contraseña</strong>
+                  <p>
+                    Solo aplica para acceso local. Si el usuario era SSO, volverá a modo local tras el cambio.
+                  </p>
+                </div>
+                <div class="password-row">
+                  <input
+                    [(ngModel)]="resetPassword"
+                    type="password"
+                    placeholder="Nueva contraseña temporal"
+                  />
+                  <button
+                    class="ghost-btn"
+                    type="button"
+                    [disabled]="saving || resetPassword.trim().length < 8"
+                    (click)="updateUserPassword()"
+                  >
+                    Aplicar
+                  </button>
+                </div>
+              </div>
+
+              <div class="assignments-card">
+                <div class="editor-header">
+                  <div>
+                    <strong>Asignación por expediente</strong>
+                    <p>
+                      El rol define la capacidad global. Aquí delimitas en qué asuntos puede actuar este usuario y con qué nivel de acceso.
+                    </p>
+                  </div>
+                </div>
+
+                @if (assignmentsLoading) {
+                  <div class="empty-state">Cargando asignaciones…</div>
+                } @else if (cases.length === 0) {
+                  <div class="empty-state">No hay expedientes disponibles para asignar.</div>
+                } @else {
+                  <div class="assignment-stack">
+                    @for (caseItem of cases; track caseItem.id) {
+                      <div class="assignment-row">
+                        <div class="assignment-copy">
+                          <strong>{{ caseItem.caseNumber }}</strong>
+                          <span>{{ caseItem.clientName }}</span>
+                          <p>
+                            {{ caseItem.caseType || 'Tipo pendiente' }}
+                            ·
+                            {{ caseItem.stage || 'Fase no definida' }}
+                          </p>
+                        </div>
+
+                        <div class="assignment-actions">
+                          <select
+                            [ngModel]="getDraftAssignmentLevel(caseItem.id)"
+                            (ngModelChange)="setDraftAssignmentLevel(caseItem.id, $event)"
+                            [attr.data-testid]="'assignment-level-' + caseItem.id"
+                          >
+                            <option value="OWNER">Responsable</option>
+                            <option value="EDITOR">Editor</option>
+                            <option value="REVIEWER">Revisor</option>
+                            <option value="VIEWER">Consulta</option>
+                          </select>
+
+                          <button
+                            class="ghost-btn"
+                            type="button"
+                            [disabled]="saving || assignmentSavingCaseId === caseItem.id"
+                            (click)="saveCaseAssignment(caseItem.id)"
+                            [attr.data-testid]="'save-assignment-' + caseItem.id"
+                          >
+                            {{
+                              assignmentSavingCaseId === caseItem.id
+                                ? 'Guardando…'
+                                : hasAssignment(caseItem.id)
+                                  ? 'Actualizar'
+                                  : 'Asignar'
+                            }}
+                          </button>
+
+                          <button
+                            class="ghost-btn"
+                            type="button"
+                            [disabled]="saving || assignmentSavingCaseId === caseItem.id || !hasAssignment(caseItem.id)"
+                            (click)="removeCaseAssignment(caseItem.id)"
+                            [attr.data-testid]="'remove-assignment-' + caseItem.id"
+                          >
+                            Quitar
+                          </button>
+                        </div>
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+
+              <div class="assignments-card">
+                <div class="editor-header">
+                  <div>
+                    <strong>Historial de acceso</strong>
+                    <p>
+                      Cada cambio de asignación queda registrado con actor, expediente y nivel aplicado.
+                    </p>
+                  </div>
+                </div>
+
+                @if (assignmentHistoryLoading) {
+                  <div class="empty-state">Cargando historial…</div>
+                } @else if (assignmentHistory.length === 0) {
+                  <div class="empty-state">Todavía no hay eventos de acceso para este usuario.</div>
+                } @else {
+                  <div class="history-stack" data-testid="assignment-history">
+                    @for (event of assignmentHistory; track event.id) {
+                      <article class="history-entry">
+                        <div class="history-entry-header">
+                          <strong>{{ event.summary }}</strong>
+                          <span>{{ formatAuditTimestamp(event.createdAt) }}</span>
+                        </div>
+                        <p>
+                          {{ getHistoryCaseLabel(event) }}
+                          @if (event.metadata?.['previousAccessLevel']) {
+                            · Antes: {{ getAccessLevelLabel($any(event.metadata?.['previousAccessLevel'])) }}
+                          }
+                          @if (event.metadata?.['nextAccessLevel']) {
+                            · Ahora: {{ getAccessLevelLabel($any(event.metadata?.['nextAccessLevel'])) }}
+                          } @else if (event.metadata?.['accessLevel']) {
+                            · Nivel: {{ getAccessLevelLabel($any(event.metadata?.['accessLevel'])) }}
+                          } @else if (event.metadata?.['removedAccessLevel']) {
+                            · Retirado: {{ getAccessLevelLabel($any(event.metadata?.['removedAccessLevel'])) }}
+                          }
+                        </p>
+                      </article>
+                    }
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        </div>
+      </section>
+    </div>

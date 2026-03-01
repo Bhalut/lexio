@@ -4,6 +4,8 @@
 dist
 tmp
 out-tsc
+.playwright
+api-e2e/.tmp
 
 # dependencies
 node_modules
@@ -34,9 +36,29 @@ yarn-error.log
 testem.log
 /typings
 
+# Environment
+.env
+.env.*
+!.env.example
+
+# Local storage
+var/storage/
+api/var/storage/
+var/mail-outbox/
+api/var/mail-outbox/
+
 # System Files
 .DS_Store
 Thumbs.db
 
 .nx/cache
 .nx/workspace-data
+
+.angular
+
+__screenshots__/
+debug-storybook.log
+playwright-report/
+test-results/
+
+storybook-static

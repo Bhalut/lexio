@@ -1,0 +1,197 @@
+@if (doc) {
+  <!-- Overlay -->
+  <div
+    class="drawer-overlay"
+    (click)="closeDrawer.emit()"
+    role="presentation"
+  ></div>
+
+  <!-- Drawer panel -->
+  <aside
+    class="drawer-panel"
+    role="dialog"
+    aria-label="Detalles del documento"
+    (keydown.escape)="closeDrawer.emit()"
+    tabindex="-1"
+  >
+    <!-- Header -->
+    <div class="drawer-header">
+      <button
+        class="close-btn"
+        (click)="closeDrawer.emit()"
+        aria-label="Cerrar"
+      >
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <line x1="18" y1="6" x2="6" y2="18" />
+          <line x1="6" y1="6" x2="18" y2="18" />
+        </svg>
+      </button>
+      <div class="nav-arrows">
+        <button
+          class="nav-btn"
+          (click)="navigate.emit('prev')"
+          aria-label="Documento anterior"
+          [disabled]="!hasPrev"
+        >
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <polyline points="15 18 9 12 15 6" />
+          </svg>
+        </button>
+        <button
+          class="nav-btn"
+          (click)="navigate.emit('next')"
+          aria-label="Siguiente documento"
+          [disabled]="!hasNext"
+        >
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <polyline points="9 6 15 12 9 18" />
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Hero -->
+    <div class="drawer-hero" [class]="'hero-' + getFileColor(doc.mimeType)">
+      <span [innerHTML]="getHeroIcon(doc.mimeType)"></span>
+      <span class="hero-type">{{ getFileTypeLabel(doc.mimeType) }}</span>
+    </div>
+
+    <!-- File name -->
+    <div class="drawer-title">
+      <h2>{{ doc.originalName }}</h2>
+    </div>
+
+    <!-- Primary action -->
+    <div class="drawer-action">
+      <button class="download-btn">
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+          <polyline points="7 10 12 15 17 10" />
+          <line x1="12" y1="15" x2="12" y2="3" />
+        </svg>
+        Descargar
+      </button>
+    </div>
+
+    <!-- Summary -->
+    <div class="drawer-section">
+      <h3 class="section-label">Resumen del archivo</h3>
+      <div class="props-grid">
+        <div class="prop">
+          <span class="prop-key">Tipo</span>
+          <span class="prop-val">{{ getFileTypeLabel(doc.mimeType) }}</span>
+        </div>
+        <div class="prop">
+          <span class="prop-key">Tamaño</span>
+          <span class="prop-val">{{ formatSize(doc.sizeBytes) }}</span>
+        </div>
+        <div class="prop">
+          <span class="prop-key">Subido</span>
+          <span class="prop-val">{{ formatDate(doc.uploadedAt) }}</span>
+        </div>
+        <div class="prop">
+          <span class="prop-key">Formato técnico</span>
+          <span class="prop-val prop-mono" [title]="doc.mimeType">{{ doc.mimeType }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Batch context (audit) -->
+    <div class="drawer-section">
+      <h3 class="section-label">Historial de entrega</h3>
+      <div class="context-card">
+        <div class="context-title">{{ doc.deliveryTitle }}</div>
+        <div class="context-desc">{{ doc.deliveryDescription }}</div>
+        <div class="context-tags">
+          <span class="context-tag">{{ doc.deliveryCategory }}</span>
+          <span class="context-tag">{{ doc.deliveryRelatedPhase }}</span>
+        </div>
+        <div class="context-meta">
+          <span class="context-avatar">{{
+            getInitials(doc.createdByName)
+          }}</span>
+          <span>{{ doc.createdByName }}</span>
+          <span class="meta-sep">·</span>
+          <span>{{ formatDate(doc.deliveryCreatedAt) }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Activity timeline -->
+    <div class="drawer-section">
+      <h3 class="section-label">Actividad</h3>
+      <div class="timeline">
+        @for (event of timelineEvents; track event.label; let i = $index) {
+          <div
+            class="timeline-item"
+            [style.animation-delay]="i * 60 + 'ms'"
+          >
+            <div
+              class="timeline-dot"
+              [style.background]="event.color"
+            ></div>
+            <div class="timeline-line"></div>
+            <div class="timeline-content">
+              <span class="timeline-label">{{ event.label }}</span>
+              <span class="timeline-time">{{ event.time }}</span>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Related documents -->
+    @if (relatedDocs.length > 0) {
+      <div class="drawer-section">
+        <h3 class="section-label">
+          Documentos relacionados
+          <span class="count-pill">{{ relatedDocs.length }}</span>
+        </h3>
+        <div class="related-list">
+          @for (rel of relatedDocs; track rel.id) {
+            <button class="related-item" (click)="selectDoc.emit(rel)">
+              <span
+                class="related-icon"
+                [class]="'icon-' + getFileColor(rel.mimeType)"
+              >
+                {{ getFileTypeLabel(rel.mimeType) }}
+              </span>
+              <span class="related-name" [title]="rel.originalName">{{ rel.originalName }}</span>
+              <span class="related-size">{{
+                formatSize(rel.sizeBytes)
+              }}</span>
+            </button>
+          }
+        </div>
+      </div>
+    }
+  </aside>
+}

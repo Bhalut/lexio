@@ -1,0 +1,133 @@
+<div class="parties-panel" data-testid="parties-panel">
+  <div class="parties-intro">
+    <div>
+      <h3>Partes y actores relevantes</h3>
+      <p>Gestiona quién interviene en el expediente sin depender del encabezado del caso. Cada cambio queda disponible para el equipo y la auditoría.</p>
+    </div>
+    <button
+      class="btn-primary"
+      type="button"
+      (click)="startCreate()"
+      [disabled]="loading || saving || !canEditParties()"
+      data-testid="add-party"
+    >
+      Agregar parte
+    </button>
+  </div>
+  @if (!canEditParties()) {
+    <div class="parties-empty">
+      Tu perfil actual puede consultar las partes del expediente, pero no modificarlas.
+    </div>
+  }
+
+  @if (loading) {
+    <div class="parties-list skeleton">
+      @for (i of [1, 2, 3]; track i) {
+        <div class="party-card skeleton-item">
+          <div class="skeleton-avatar"></div>
+          <div class="skeleton-copy">
+            <div class="skeleton-line sm"></div>
+            <div class="skeleton-line lg"></div>
+          </div>
+        </div>
+      }
+    </div>
+  } @else if (error) {
+    <div class="parties-empty error">{{ error }}</div>
+  } @else {
+    @if (showForm) {
+      <section class="party-form-card" data-testid="party-form">
+        <div class="party-form-header">
+          <div>
+            <strong>{{ editingPartyId ? 'Editar parte' : 'Nueva parte' }}</strong>
+            <p>Usa el lenguaje del expediente: rol procesal, nombre y contexto.</p>
+          </div>
+        </div>
+
+        @if (formError) {
+          <div class="form-error">{{ formError }}</div>
+        }
+
+        <div class="party-form-grid">
+          <label class="field">
+            <span>Rol</span>
+            <input [(ngModel)]="form.role" type="text" placeholder="Ej. Contraparte, Perito, Tribunal" />
+          </label>
+
+          <label class="field">
+            <span>Orden</span>
+            <input [(ngModel)]="form.sortOrder" type="number" min="0" max="999" />
+          </label>
+        </div>
+
+        <label class="field">
+          <span>Nombre</span>
+          <input [(ngModel)]="form.name" type="text" placeholder="Nombre completo de la parte o institución" />
+        </label>
+
+        <label class="field">
+          <span>Detalle</span>
+          <textarea
+            [(ngModel)]="form.detail"
+            rows="3"
+            placeholder="Resume por qué esta parte es relevante para el expediente."
+          ></textarea>
+        </label>
+
+        <div class="party-form-actions">
+          <button class="btn-secondary" type="button" (click)="cancelForm()" [disabled]="saving">Cancelar</button>
+          <button class="btn-primary" type="button" (click)="saveParty()" [disabled]="!isFormValid() || saving">
+            {{ saving ? 'Guardando…' : editingPartyId ? 'Guardar cambios' : 'Crear parte' }}
+          </button>
+        </div>
+      </section>
+    }
+
+    @if (parties.length === 0) {
+      <div class="parties-empty">Aún no se registran partes para este expediente.</div>
+    } @else {
+      <div class="parties-list">
+        @for (party of parties; track party.id; let i = $index) {
+          <article
+            class="party-card stagger-item"
+            [attr.draggable]="canEditParties() && !saving"
+            (dragstart)="onDragStart(party)"
+            (dragover)="onDragOver($event)"
+            (drop)="onDrop(party)"
+            [class.party-card--dragging]="draggingPartyId === party.id"
+          >
+            <div class="party-avatar">{{ party.initials }}</div>
+            <div class="party-copy">
+              <div class="party-topline">
+                <div class="party-title-row">
+                  <button class="drag-handle" type="button" aria-label="Reordenar parte" [disabled]="saving">
+                    ⋮⋮
+                  </button>
+                  <span class="party-role">{{ party.role }}</span>
+                </div>
+                <div class="party-actions">
+                  @if (confirmDeleteId === party.id) {
+                    <div class="confirm-actions animate-fade-in">
+                      <span class="confirm-msg">¿Eliminar?</span>
+                      <button class="confirm-btn" type="button" (click)="deleteParty(party)" [disabled]="saving">Sí</button>
+                      <button class="cancel-btn" type="button" (click)="cancelDelete()" [disabled]="saving">No</button>
+                    </div>
+                  } @else {
+                    <button class="edit-btn" type="button" (click)="startEdit(party)" [disabled]="saving || !canEditParties()" title="Editar información">
+                      Editar
+                    </button>
+                    <button class="delete-btn" type="button" (click)="requestDelete(party.id)" [disabled]="saving || !canEditParties()" title="Remover del expediente">
+                      Eliminar
+                    </button>
+                  }
+                </div>
+              </div>
+              <strong class="party-label">{{ party.name }}</strong>
+              <p class="party-detail">{{ party.detail || 'Sin detalle complementario registrado.' }}</p>
+            </div>
+          </article>
+        }
+      </div>
+    }
+  }
+</div>

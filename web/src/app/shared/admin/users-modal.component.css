@@ -1,0 +1,368 @@
+.modal-shell {
+        position: fixed;
+        inset: 0;
+        z-index: 70;
+        display: grid;
+        place-items: center;
+        background: rgba(16, 25, 35, 0.28);
+        backdrop-filter: blur(8px);
+        padding: 24px;
+      }
+
+      .modal-card {
+        width: min(1100px, 100%);
+        max-height: calc(100vh - 48px);
+        overflow: auto;
+        border: 1px solid var(--color-border);
+        border-radius: 28px;
+        background: rgba(255, 252, 247, 0.96);
+        box-shadow: 0 28px 80px rgba(16, 25, 35, 0.18);
+        padding: 24px;
+      }
+
+      .modal-header {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 18px;
+      }
+
+      .modal-kicker {
+        margin: 0 0 8px;
+        color: var(--color-brand-700);
+        font-size: 0.74rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+
+      .modal-header h2 {
+        margin: 0;
+        font-family: var(--font-display);
+        font-size: 2rem;
+        color: var(--color-ink-950);
+      }
+
+      .modal-header p {
+        margin: 8px 0 0;
+        color: var(--color-ink-600);
+        max-width: 64ch;
+      }
+
+      .header-actions,
+      .actions,
+      .password-row {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+
+      .modal-grid {
+        display: grid;
+        grid-template-columns: 300px minmax(0, 1fr);
+        gap: 18px;
+      }
+
+      .user-list,
+      .editor-card,
+      .password-card,
+      .assignments-card {
+        border: 1px solid var(--color-border);
+        border-radius: 20px;
+        background: rgba(255, 255, 255, 0.82);
+      }
+
+      .user-list {
+        padding: 10px;
+        display: grid;
+        gap: 8px;
+        align-content: start;
+      }
+
+      .user-list-item {
+        display: grid;
+        gap: 6px;
+        width: 100%;
+        text-align: left;
+        border: 1px solid transparent;
+        border-radius: 16px;
+        background: rgba(250, 246, 239, 0.65);
+        padding: 14px;
+        cursor: pointer;
+      }
+
+      .user-list-item.active {
+        border-color: var(--color-brand-500);
+        background: rgba(255, 248, 234, 0.95);
+      }
+
+      .user-list-item strong {
+        display: block;
+        color: var(--color-ink-900);
+      }
+
+      .user-list-item span {
+        color: var(--color-ink-600);
+        font-size: 0.8rem;
+      }
+
+      .user-flags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        border-radius: 999px;
+        background: rgba(20, 42, 66, 0.08);
+        color: var(--color-ink-700);
+        padding: 4px 8px;
+        font-size: 0.68rem;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+      }
+
+      .badge--accent {
+        background: rgba(181, 125, 34, 0.16);
+        color: #7a5310;
+      }
+
+      .badge--muted {
+        background: rgba(110, 118, 129, 0.12);
+        color: #5e6874;
+      }
+
+      .editor-card {
+        padding: 18px;
+        display: grid;
+        gap: 16px;
+      }
+
+      .editor-header strong,
+      .password-card strong {
+        display: block;
+        color: var(--color-ink-900);
+        font-size: 1rem;
+      }
+
+      .editor-header p,
+      .password-card p {
+        margin: 6px 0 0;
+        color: var(--color-ink-600);
+        line-height: 1.5;
+      }
+
+      .form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .field {
+        display: grid;
+        gap: 7px;
+      }
+
+      .field span {
+        color: var(--color-ink-800);
+        font-size: 0.8rem;
+        font-weight: 700;
+      }
+
+      .field input,
+      .field select,
+      .password-row input {
+        width: 100%;
+        border: 1px solid rgba(40, 52, 73, 0.14);
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.9);
+        color: var(--color-ink-900);
+        padding: 12px 14px;
+        font: inherit;
+      }
+
+      .toggle-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+      }
+
+      .toggle {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--color-ink-800);
+        font-size: 0.84rem;
+        font-weight: 600;
+      }
+
+      .password-card {
+        padding: 16px;
+        display: grid;
+        gap: 12px;
+      }
+
+      .assignments-card {
+        padding: 16px;
+        display: grid;
+        gap: 14px;
+      }
+
+      .history-stack {
+        display: grid;
+        gap: 12px;
+      }
+
+      .history-entry {
+        border: 1px solid rgba(20, 42, 66, 0.08);
+        border-radius: 16px;
+        background: rgba(250, 246, 239, 0.68);
+        padding: 14px;
+      }
+
+      .history-entry-header {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        align-items: baseline;
+      }
+
+      .history-entry-header strong {
+        color: var(--color-ink-900);
+        font-size: 0.9rem;
+      }
+
+      .history-entry-header span {
+        color: var(--color-ink-500);
+        font-size: 0.74rem;
+        white-space: nowrap;
+      }
+
+      .history-entry p {
+        margin: 8px 0 0;
+        color: var(--color-ink-600);
+        line-height: 1.5;
+      }
+
+      .assignment-stack {
+        display: grid;
+        gap: 12px;
+      }
+
+      .assignment-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 14px;
+        border: 1px solid rgba(20, 42, 66, 0.08);
+        border-radius: 16px;
+        background: rgba(250, 246, 239, 0.68);
+        padding: 14px;
+      }
+
+      .assignment-copy strong {
+        display: block;
+        color: var(--color-ink-900);
+      }
+
+      .assignment-copy span {
+        display: block;
+        margin-top: 4px;
+        color: var(--color-ink-700);
+        font-size: 0.84rem;
+      }
+
+      .assignment-copy p {
+        margin: 6px 0 0;
+        color: var(--color-ink-600);
+        font-size: 0.78rem;
+      }
+
+      .assignment-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .assignment-actions select {
+        min-width: 150px;
+        border: 1px solid rgba(40, 52, 73, 0.14);
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.9);
+        color: var(--color-ink-900);
+        padding: 10px 12px;
+        font: inherit;
+      }
+
+      .banner,
+      .empty-state {
+        border-radius: 16px;
+        padding: 12px 14px;
+        font-size: 0.82rem;
+      }
+
+      .banner--error {
+        background: rgba(166, 53, 52, 0.1);
+        color: #8a2520;
+      }
+
+      .banner--success {
+        background: rgba(35, 122, 87, 0.1);
+        color: #206a4a;
+      }
+
+      .empty-state {
+        background: rgba(250, 246, 239, 0.65);
+        color: var(--color-ink-600);
+      }
+
+      .ghost-btn,
+      .primary-btn,
+      .close-btn {
+        border-radius: 999px;
+        font: inherit;
+        font-size: 0.82rem;
+        font-weight: 700;
+        padding: 10px 16px;
+        cursor: pointer;
+      }
+
+      .ghost-btn,
+      .close-btn {
+        border: 1px solid rgba(40, 52, 73, 0.14);
+        background: rgba(255, 255, 255, 0.78);
+        color: var(--color-ink-700);
+      }
+
+      .primary-btn {
+        border: none;
+        background: linear-gradient(135deg, var(--color-brand-700), var(--color-brand-500));
+        color: #fff8ea;
+      }
+
+      .primary-btn:disabled,
+      .ghost-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      @media (max-width: 960px) {
+        .modal-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .form-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .header-actions,
+        .actions,
+        .password-row,
+        .assignment-actions,
+        .assignment-row {
+          flex-direction: column;
+          align-items: stretch;
+        }
+      }

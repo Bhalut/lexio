@@ -1,0 +1,391 @@
+<div class="documents-page" data-testid="documents-workspace">
+  <header class="workspace-header">
+    <div>
+      <p class="workspace-kicker">Workspace legal</p>
+      <h2 class="workspace-title">Expediente y biblioteca documental</h2>
+      <p class="workspace-subtitle">
+        La interfaz prioriza archivos y contexto; el historial técnico queda
+        disponible sin interrumpir la lectura.
+      </p>
+      @if (!currentUser) {
+        <p class="workspace-auth-hint">
+          Selecciona una sesión desde la barra lateral para registrar
+          documentos, notas y cambios con autoría verificable.
+        </p>
+      }
+    </div>
+    @if (!loading && !error) {
+      <div class="workspace-actions">
+        <button
+          class="btn-secondary"
+          type="button"
+          (click)="selectTab('notes')"
+        >
+          Registrar nota
+        </button>
+        <button
+          class="btn-primary"
+          type="button"
+          (click)="openUploadModal()"
+          [disabled]="!canUpload()"
+          data-testid="open-upload-modal"
+        >
+          Agregar documentos
+        </button>
+      </div>
+    }
+  </header>
+
+  @if (loading) {
+    <app-case-header [caseData]="null"></app-case-header>
+    <div class="skeleton-grid">
+      @for (item of [1, 2, 3, 4]; track item) {
+        <div class="skeleton-card"></div>
+      }
+    </div>
+  } @else if (error) {
+    <section class="error-state">
+      <h3>No pudimos cargar el expediente</h3>
+      <p>{{ error }}</p>
+      <button class="btn-primary" type="button" (click)="loadData()">
+        Reintentar
+      </button>
+    </section>
+  } @else {
+    <app-case-header [caseData]="caseData"></app-case-header>
+
+    <div class="tab-bar" role="tablist" aria-label="Secciones del expediente">
+      @for (tab of tabs; track tab.id) {
+        <button
+          class="tab-btn"
+          type="button"
+          role="tab"
+          [attr.aria-selected]="selectedTab === tab.id"
+          [class.active]="selectedTab === tab.id"
+          (click)="selectTab(tab.id)"
+          [attr.data-testid]="'tab-' + tab.id"
+        >
+          <span>{{ tab.label }}</span>
+          @if (tab.count !== undefined) {
+            <span class="tab-count">{{ tab.count }}</span>
+          }
+        </button>
+      }
+    </div>
+
+    @if (selectedTab === 'documents') {
+      @if (allDocuments.length === 0) {
+        <section class="empty-state">
+          <p class="empty-kicker">Asistente de inicio</p>
+          <h3>Este expediente aún no tiene archivos</h3>
+          <p class="empty-copy">
+            Comienza con una entrega documental clara. La plataforma mostrará
+            los archivos al frente y conservará el contexto en el historial.
+          </p>
+          <ul class="empty-list">
+            <li>Nombrar la entrega según su función procesal.</li>
+            <li>Explicar brevemente la fase o propósito jurídico.</li>
+            <li>Subir varios archivos en una sola acción.</li>
+          </ul>
+          <button
+            class="btn-primary"
+            type="button"
+            (click)="openUploadModal()"
+            [disabled]="!canUpload()"
+          >
+            Crear primera entrega
+          </button>
+        </section>
+      } @else {
+        <section class="insights-grid">
+          <article class="insight-card insight-card--strong stagger-item">
+            <span class="insight-label">Archivos visibles</span>
+            <strong class="insight-value">{{
+              filteredDocuments.length
+            }}</strong>
+            <p class="insight-detail">
+              Acceso directo a documentos sin exponer detalle técnico
+              innecesario.
+            </p>
+          </article>
+          <article class="insight-card stagger-item">
+            <span class="insight-label">Última entrega</span>
+            <strong class="insight-value">{{
+              getLatestDeliveryTitle()
+            }}</strong>
+            <p class="insight-detail">{{ getLatestDeliveryMeta() }}</p>
+          </article>
+          <article class="insight-card stagger-item">
+            <span class="insight-label">Siguiente movimiento</span>
+            <strong class="insight-value">{{
+              caseData?.nextAction || 'Definir siguiente actuación'
+            }}</strong>
+            <p class="insight-detail">
+              La plataforma actúa como guía y no como una simple carpeta.
+            </p>
+          </article>
+        </section>
+
+        <section class="library-shell">
+          <div class="library-toolbar">
+            <label class="search-box">
+              <span class="sr-only">Buscar documentos</span>
+              <input
+                #searchInput
+                type="text"
+                class="search-input"
+                [value]="searchQuery"
+                (input)="onSearch($event)"
+                placeholder="Buscar por archivo, entrega o responsable"
+              />
+            </label>
+
+            <div class="toolbar-controls">
+              <div class="toolbar-filters">
+                <select
+                  class="sort-select filter-select"
+                  [value]="selectedCategory"
+                  (change)="setCategoryFilter($any($event.target).value)"
+                >
+                  <option value="all">Todas las categorías</option>
+                  @for (option of categoryOptions; track option) {
+                    <option [value]="option">{{ option }}</option>
+                  }
+                </select>
+
+                <select
+                  class="sort-select filter-select"
+                  [value]="selectedPhase"
+                  (change)="setPhaseFilter($any($event.target).value)"
+                >
+                  <option value="all">Todas las fases</option>
+                  @for (option of phaseOptions; track option) {
+                    <option [value]="option">{{ option }}</option>
+                  }
+                </select>
+              </div>
+
+              <select
+                class="sort-select"
+                [value]="sortMode"
+                (change)="setSortMode($any($event.target).value)"
+              >
+                <option value="newest">Más recientes</option>
+                <option value="name">Nombre</option>
+                <option value="type">Tipo</option>
+                <option value="size">Tamaño</option>
+              </select>
+
+              <div class="view-toggle" aria-label="Cambiar vista">
+                <button
+                  type="button"
+                  class="view-btn"
+                  [class.active]="viewMode === 'list'"
+                  (click)="viewMode = 'list'"
+                >
+                  Lista
+                </button>
+                <button
+                  type="button"
+                  class="view-btn"
+                  [class.active]="viewMode === 'grid'"
+                  (click)="viewMode = 'grid'"
+                >
+                  Cuadrícula
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="library-header">
+            <div>
+              <h3>Archivos del expediente</h3>
+              <p>
+                {{ getFilteredSummary() }} · {{ getTypeBreakdown() }} ·
+                {{ getTotalSize() }}
+              </p>
+            </div>
+            @if (hasActiveFilters()) {
+              <button
+                type="button"
+                class="ghost-btn"
+                (click)="clearLibraryFilters()"
+              >
+                Limpiar filtros
+              </button>
+            }
+          </div>
+
+          @if (filteredDocuments.length === 0) {
+            <div class="no-results">
+              <strong>No encontramos coincidencias</strong>
+              <p>
+                Prueba con otro término o restablece la categoría y la fase para
+                volver a ver toda la biblioteca.
+              </p>
+            </div>
+          } @else if (viewMode === 'list') {
+            <div class="doc-list">
+              @for (doc of filteredDocuments; track doc.id; let i = $index) {
+                <app-document-row
+                  [doc]="doc"
+                  [index]="i"
+                  (selectDoc)="openDrawer($event)"
+                ></app-document-row>
+              }
+            </div>
+          } @else {
+            <div class="doc-grid">
+              @for (doc of filteredDocuments; track doc.id; let i = $index) {
+                <app-document-grid-card
+                  class="stagger-item"
+                  [doc]="doc"
+                  [index]="i"
+                  (selectDoc)="openDrawer($event)"
+                ></app-document-grid-card>
+              }
+            </div>
+          }
+        </section>
+
+        <section class="history-section">
+          <button
+            type="button"
+            class="history-toggle"
+            (click)="showDeliveryHistory = !showDeliveryHistory"
+          >
+            <span>Historial de entregas y auditoría</span>
+            <span>{{ showDeliveryHistory ? 'Ocultar' : 'Mostrar' }}</span>
+          </button>
+
+          @if (showDeliveryHistory) {
+            <p class="history-copy">
+              Los archivos siguen siendo la vista principal. Aquí se conserva el
+              contexto de cada entrega para revisión, trazabilidad y auditoría.
+            </p>
+            <div class="history-filters">
+              <div class="toolbar-filters">
+                <select
+                  class="sort-select filter-select"
+                  [value]="historyCategory"
+                  (change)="setHistoryCategoryFilter($any($event.target).value)"
+                >
+                  <option value="all">Todas las categorías</option>
+                  @for (option of categoryOptions; track option) {
+                    <option [value]="option">{{ option }}</option>
+                  }
+                </select>
+
+                <select
+                  class="sort-select filter-select"
+                  [value]="historyPhase"
+                  (change)="setHistoryPhaseFilter($any($event.target).value)"
+                >
+                  <option value="all">Todas las fases</option>
+                  @for (option of phaseOptions; track option) {
+                    <option [value]="option">{{ option }}</option>
+                  }
+                </select>
+              </div>
+
+              @if (hasActiveHistoryFilters()) {
+                <button
+                  type="button"
+                  class="ghost-btn"
+                  (click)="clearHistoryFilters()"
+                >
+                  Limpiar filtros
+                </button>
+              }
+            </div>
+
+            @if (filteredDeliveries.length === 0) {
+              <div class="no-results">
+                <strong>No hay entregas para esta combinación</strong>
+                <p>
+                  Revisa otra categoría o fase para consultar el historial
+                  completo.
+                </p>
+              </div>
+            } @else {
+              <div class="delivery-stack">
+                @for (
+                  delivery of filteredDeliveries;
+                  track delivery.id;
+                  let i = $index
+                ) {
+                  <app-delivery-card
+                    class="stagger-item"
+                    [delivery]="delivery"
+                    [index]="i"
+                  ></app-delivery-card>
+                }
+              </div>
+            }
+          }
+        </section>
+      }
+    }
+
+    @if (selectedTab === 'notes') {
+      <section class="tab-panel animate-slide-up">
+        <app-case-notes-panel
+          [caseId]="caseId"
+          [caseAccessLevel]="caseData?.currentUserAccessLevel ?? null"
+        ></app-case-notes-panel>
+      </section>
+    }
+
+    @if (selectedTab === 'activity') {
+      <section class="tab-panel animate-slide-up">
+        <app-case-activity-panel [caseId]="caseId"></app-case-activity-panel>
+      </section>
+    }
+
+    @if (selectedTab === 'parties') {
+      <section class="tab-panel animate-slide-up">
+        <app-case-parties-panel
+          [caseId]="caseId"
+          [caseAccessLevel]="caseData?.currentUserAccessLevel ?? null"
+        ></app-case-parties-panel>
+      </section>
+    }
+  }
+
+  @if (showUploadModal) {
+    <app-upload-modal
+      [uploadProgress]="uploadProgress"
+      [uploading]="uploading"
+      [uploadError]="uploadError"
+      (closeModal)="closeUploadModal()"
+      (cancelUpload)="cancelUpload()"
+      (upload)="onUpload($event)"
+    ></app-upload-modal>
+  }
+
+  <app-document-detail-drawer
+    [doc]="selectedDoc"
+    [relatedDocs]="relatedDocs"
+    [hasPrev]="selectedIndex > 0"
+    [hasNext]="selectedIndex < filteredDocuments.length - 1"
+    (closeDrawer)="closeDrawer()"
+    (navigate)="navigateDrawer($event)"
+    (selectDoc)="openDrawer($event)"
+  ></app-document-detail-drawer>
+
+  @if (toast) {
+    <div class="toast-container">
+      <div class="toast" [class]="'toast--' + toast.type">
+        <span data-testid="workspace-toast">{{ toast.message }}</span>
+        <button
+          type="button"
+          class="toast-dismiss"
+          (click)="dismissToast()"
+          aria-label="Cerrar notificación"
+        >
+          ×
+        </button>
+      </div>
+    </div>
+  }
+</div>
