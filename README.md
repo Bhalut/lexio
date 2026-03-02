@@ -25,20 +25,27 @@ This phase of the product includes:
 
 ## Repository Structure
 
-| Path       | Purpose                                             |
-| ---------- | --------------------------------------------------- |
-| `api/`     | NestJS API, persistence, auth, legal domain modules |
-| `web/`     | Angular SSR application for the legal workspace     |
-| `api-e2e/` | API end-to-end tests                                |
-| `web-e2e/` | Browser smoke tests with Playwright                 |
-| `docs/`    | Product-facing engineering documentation            |
-| `docker/`  | Local PostgreSQL container definition               |
+| Path              | Purpose                                             |
+| ----------------- | --------------------------------------------------- |
+| `api/`            | NestJS API, persistence, auth, legal domain modules |
+| `web/`            | Angular SSR application for the legal workspace     |
+| `api-e2e/`        | API end-to-end tests                                |
+| `web-e2e/`        | Browser smoke tests with Playwright                 |
+| `docs/`           | Product-facing engineering documentation            |
+| `docker/`         | Local PostgreSQL container definition               |
+| `docker/railway/` | Production container definitions for Railway        |
 
 ## Production Commit Scope
 
 - Production-ready changes usually live under `api/`, `web/`, `libs/`, `docs/`, and root configuration that affects supported workflows.
 - Keep local-only artifacts out of deploy commits, including `.vscode/`, ad-hoc `scripts/`, generated screenshots, Playwright reports, and similar workspace residue.
 - Promote a local helper script only after it becomes part of the supported workflow and is documented in the relevant README.
+
+## Deployment Artifacts
+
+- `docker/railway/api.Dockerfile` builds and starts the NestJS API, including the migration step required on boot.
+- `docker/railway/web.Dockerfile` builds and serves the Angular SSR web application.
+- `.dockerignore` excludes local-only material such as docs, E2E suites, temporary outputs, and ad-hoc `scripts/` so deployment builds do not ship workspace residue.
 
 ## Requirements
 

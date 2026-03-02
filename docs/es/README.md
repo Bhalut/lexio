@@ -36,6 +36,12 @@ Esta fase del producto incluye:
 - Mantén fuera de los commits de despliegue los artefactos locales como `.vscode/`, `scripts/` ad hoc, screenshots generados, reportes de Playwright y residuos similares del workspace.
 - Un script local solo debe promoverse cuando pase a formar parte del flujo soportado y quede documentado en el README correspondiente.
 
+## Artefactos de despliegue
+
+- `docker/railway/api.Dockerfile` construye y arranca la API de NestJS, incluyendo la ejecución de migraciones al iniciar.
+- `docker/railway/web.Dockerfile` construye y sirve la aplicación web Angular SSR.
+- `.dockerignore` excluye material solo local como documentación, suites E2E, salidas temporales y `scripts/` ad hoc para evitar que el contexto de build arrastre residuos del workspace.
+
 ## Inicio rápido
 
 1. Instala dependencias.
