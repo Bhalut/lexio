@@ -1,0 +1,17 @@
+# Ignore generated files and binary assets.
+/dist
+/coverage
+/.nx/cache
+/.nx/workspace-data
+.angular
+api-e2e/.tmp
+playwright-report
+test-results
+var/storage
+api/var/storage
+var/mail-outbox
+api/var/mail-outbox
+docs/assets/screenshots/*.png
+docs/es/assets/screenshots/*.png
+web/public/*.png
+web/public/*.ico
