@@ -28,6 +28,13 @@ Esta fase del producto incluye:
 - notas, partes y actividad
 - control de acceso por rol y por expediente
 - cobertura E2E para API y web
+- validación de UI mediante pruebas unitarias y smoke tests de Playwright, sin Storybook dentro del toolchain soportado
+
+## Alcance de commits de producción
+
+- Los cambios listos para producción suelen vivir en `api/`, `web/`, `libs/`, `docs/` y en configuración raíz que afecta flujos soportados.
+- Mantén fuera de los commits de despliegue los artefactos locales como `.vscode/`, `scripts/` ad hoc, screenshots generados, reportes de Playwright y residuos similares del workspace.
+- Un script local solo debe promoverse cuando pase a formar parte del flujo soportado y quede documentado en el README correspondiente.
 
 ## Inicio rápido
 
@@ -65,19 +72,19 @@ pnpm nx serve web
 
 ## Accesos locales
 
-| Servicio | URL |
-| --- | --- |
-| Web | `http://localhost:4200` |
-| API | `http://localhost:3000/api/v1` |
-| Swagger | `http://localhost:3000/api/v1/swagger` |
+| Servicio | URL                                    |
+| -------- | -------------------------------------- |
+| Web      | `http://localhost:4200`                |
+| API      | `http://localhost:3000/api/v1`         |
+| Swagger  | `http://localhost:3000/api/v1/swagger` |
 
 ## Usuarios demo
 
-| Usuario | Perfil | Correo |
-| --- | --- | --- |
+| Usuario        | Perfil                      | Correo                       |
+| -------------- | --------------------------- | ---------------------------- |
 | Carlos Mendoza | Administrador de plataforma | `carlos.mendoza@lexio.local` |
-| Ana Ramírez | Operadora legal | `ana.ramirez@lexio.local` |
-| Sofía Ortiz | Lectora legal | `sofia.ortiz@lexio.local` |
+| Ana Ramírez    | Operadora legal             | `ana.ramirez@lexio.local`    |
+| Sofía Ortiz    | Lectora legal               | `sofia.ortiz@lexio.local`    |
 
 Contraseña por defecto:
 

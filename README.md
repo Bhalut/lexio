@@ -21,26 +21,33 @@ This phase of the product includes:
 - Angular SSR web application
 - NestJS API with OpenAPI documentation
 - API end-to-end coverage and browser smoke coverage
+- UI validation through unit tests and Playwright smoke coverage, without Storybook in the supported delivery toolchain
 
 ## Repository Structure
 
-| Path | Purpose |
-| --- | --- |
-| `api/` | NestJS API, persistence, auth, legal domain modules |
-| `web/` | Angular SSR application for the legal workspace |
-| `api-e2e/` | API end-to-end tests |
-| `web-e2e/` | Browser smoke tests with Playwright |
-| `docs/` | Product-facing engineering documentation |
-| `docker/` | Local PostgreSQL container definition |
+| Path       | Purpose                                             |
+| ---------- | --------------------------------------------------- |
+| `api/`     | NestJS API, persistence, auth, legal domain modules |
+| `web/`     | Angular SSR application for the legal workspace     |
+| `api-e2e/` | API end-to-end tests                                |
+| `web-e2e/` | Browser smoke tests with Playwright                 |
+| `docs/`    | Product-facing engineering documentation            |
+| `docker/`  | Local PostgreSQL container definition               |
+
+## Production Commit Scope
+
+- Production-ready changes usually live under `api/`, `web/`, `libs/`, `docs/`, and root configuration that affects supported workflows.
+- Keep local-only artifacts out of deploy commits, including `.vscode/`, ad-hoc `scripts/`, generated screenshots, Playwright reports, and similar workspace residue.
+- Promote a local helper script only after it becomes part of the supported workflow and is documented in the relevant README.
 
 ## Requirements
 
-| Tool | Version used in this repository |
-| --- | --- |
-| Node.js | 24.x |
-| pnpm | 10.x |
-| Docker | Current stable release |
-| PostgreSQL | 16.x via Docker Compose |
+| Tool       | Version used in this repository |
+| ---------- | ------------------------------- |
+| Node.js    | 24.x                            |
+| pnpm       | 10.x                            |
+| Docker     | Current stable release          |
+| PostgreSQL | 16.x via Docker Compose         |
 
 ## Quick Start
 
@@ -88,21 +95,21 @@ pnpm nx serve web
 
 ## Local URLs
 
-| Service | URL |
-| --- | --- |
-| Web application | `http://localhost:4200` |
-| API base URL | `http://localhost:3000/api/v1` |
-| Swagger UI | `http://localhost:3000/api/v1/swagger` |
+| Service         | URL                                    |
+| --------------- | -------------------------------------- |
+| Web application | `http://localhost:4200`                |
+| API base URL    | `http://localhost:3000/api/v1`         |
+| Swagger UI      | `http://localhost:3000/api/v1/swagger` |
 
 ## Demo Users
 
 The seed process creates these local users:
 
-| User | Role | Email |
-| --- | --- | --- |
+| User           | Role           | Email                        |
+| -------------- | -------------- | ---------------------------- |
 | Carlos Mendoza | Platform admin | `carlos.mendoza@lexio.local` |
-| Ana Ramirez | Legal operator | `ana.ramirez@lexio.local` |
-| Sofia Ortiz | Legal viewer | `sofia.ortiz@lexio.local` |
+| Ana Ramirez    | Legal operator | `ana.ramirez@lexio.local`    |
+| Sofia Ortiz    | Legal viewer   | `sofia.ortiz@lexio.local`    |
 
 Default password:
 
@@ -111,18 +118,18 @@ Default password:
 
 ## Useful Commands
 
-| Task | Command |
-| --- | --- |
-| Run API | `pnpm nx serve api` |
-| Run web | `pnpm nx serve web` |
-| Build API | `pnpm nx build api` |
-| Build web | `pnpm nx build web` |
-| Run API unit tests | `pnpm nx test api --runInBand` |
-| Run web unit tests | `pnpm nx test web` |
-| Run API E2E | `pnpm nx e2e api-e2e` |
-| Run web smoke tests | `pnpm nx e2e web-e2e` |
-| Lint API | `pnpm nx lint api` |
-| Lint web | `pnpm nx lint web` |
+| Task                | Command                        |
+| ------------------- | ------------------------------ |
+| Run API             | `pnpm nx serve api`            |
+| Run web             | `pnpm nx serve web`            |
+| Build API           | `pnpm nx build api`            |
+| Build web           | `pnpm nx build web`            |
+| Run API unit tests  | `pnpm nx test api --runInBand` |
+| Run web unit tests  | `pnpm nx test web`             |
+| Run API E2E         | `pnpm nx e2e api-e2e`          |
+| Run web smoke tests | `pnpm nx e2e web-e2e`          |
+| Lint API            | `pnpm nx lint api`             |
+| Lint web            | `pnpm nx lint web`             |
 
 ## Command Safety
 
