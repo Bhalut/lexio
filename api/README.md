@@ -46,27 +46,34 @@ pnpm nx serve api
 
 ## Key Environment Variables
 
-| Variable | Purpose |
-| --- | --- |
-| `DATABASE_URL` | PostgreSQL connection string |
-| `PORT` | API port, default `3000` |
-| `AUTH_MODE` | `LOCAL`, `HYBRID`, or `OIDC_ONLY` |
-| `AUTH_APP_URL` | public web URL used by auth flows |
-| `AUTH_POST_LOGIN_URL` | redirect after local or OIDC login |
-| `AUTH_POST_LOGOUT_URL` | redirect after logout |
-| `STORAGE_LOCAL_PATH` | local upload directory |
-| `AUTH_EMAIL_OUTBOX_PATH` | local password reset outbox |
+| Variable                  | Purpose                                                                                          |
+| ------------------------- | ------------------------------------------------------------------------------------------------ |
+| `DATABASE_URL`            | PostgreSQL connection string                                                                     |
+| `PORT`                    | API port, default `3000`                                                                         |
+| `AUTH_MODE`               | `LOCAL`, `HYBRID`, or `OIDC_ONLY`                                                                |
+| `AUTH_APP_URL`            | public web URL used by auth flows                                                                |
+| `AUTH_POST_LOGIN_URL`     | redirect after local or OIDC login                                                               |
+| `AUTH_POST_LOGOUT_URL`    | redirect after logout                                                                            |
+| `STORAGE_LOCAL_PATH`      | local upload directory                                                                           |
+| `STORAGE_PUBLIC_BASE_URL` | absolute base URL prepended to generated file URLs when files are exposed outside the API origin |
+| `AUTH_EMAIL_OUTBOX_PATH`  | local password reset outbox                                                                      |
 
 ## Common Commands
 
-| Task | Command |
-| --- | --- |
-| Run in development | `pnpm nx serve api` |
-| Build production bundle | `pnpm nx build api` |
-| Unit tests | `pnpm nx test api --runInBand` |
-| API E2E | `pnpm nx e2e api-e2e` |
-| Seed local data | `pnpm seed` |
-| Apply migrations | `pnpm migration:run` |
+| Task                    | Command                        |
+| ----------------------- | ------------------------------ |
+| Run in development      | `pnpm nx serve api`            |
+| Build production bundle | `pnpm nx build api`            |
+| Unit tests              | `pnpm nx test api --runInBand` |
+| API E2E                 | `pnpm nx e2e api-e2e`          |
+| Seed local data         | `pnpm seed`                    |
+| Apply migrations        | `pnpm migration:run`           |
+
+## Deployment
+
+- `docker/railway/api.Dockerfile` is the supported production container definition for Railway-style deployments.
+- Set `STORAGE_PUBLIC_BASE_URL` when uploaded files are served behind a CDN or a dedicated files domain instead of the API origin.
+- Keep local-only helpers under `scripts/` out of deploy commits unless they become part of the documented production workflow.
 
 ## Command Safety
 
@@ -78,20 +85,20 @@ pnpm nx serve api
 
 ## Main Route Surface
 
-| Method | Route | Purpose |
-| --- | --- | --- |
-| `POST` | `/api/v1/auth/sessions` | start local session |
-| `DELETE` | `/api/v1/auth/sessions/current` | close current session |
-| `GET` | `/api/v1/users/me` | current authenticated user |
-| `GET` | `/api/v1/cases` | cases visible to the current user |
-| `GET` | `/api/v1/cases/:caseId` | case header and access level |
-| `GET` | `/api/v1/cases/:caseId/document-deliveries` | list document deliveries |
-| `POST` | `/api/v1/cases/:caseId/document-deliveries` | create document delivery |
-| `GET` | `/api/v1/cases/:caseId/notes` | list notes |
-| `POST` | `/api/v1/cases/:caseId/notes` | create note |
-| `GET` | `/api/v1/cases/:caseId/parties` | list parties |
-| `PATCH` | `/api/v1/cases/:caseId/parties/order` | reorder parties |
-| `GET` | `/api/v1/cases/:caseId/activities` | list activity |
+| Method   | Route                                       | Purpose                           |
+| -------- | ------------------------------------------- | --------------------------------- |
+| `POST`   | `/api/v1/auth/sessions`                     | start local session               |
+| `DELETE` | `/api/v1/auth/sessions/current`             | close current session             |
+| `GET`    | `/api/v1/users/me`                          | current authenticated user        |
+| `GET`    | `/api/v1/cases`                             | cases visible to the current user |
+| `GET`    | `/api/v1/cases/:caseId`                     | case header and access level      |
+| `GET`    | `/api/v1/cases/:caseId/document-deliveries` | list document deliveries          |
+| `POST`   | `/api/v1/cases/:caseId/document-deliveries` | create document delivery          |
+| `GET`    | `/api/v1/cases/:caseId/notes`               | list notes                        |
+| `POST`   | `/api/v1/cases/:caseId/notes`               | create note                       |
+| `GET`    | `/api/v1/cases/:caseId/parties`             | list parties                      |
+| `PATCH`  | `/api/v1/cases/:caseId/parties/order`       | reorder parties                   |
+| `GET`    | `/api/v1/cases/:caseId/activities`          | list activity                     |
 
 ## Request and Response Examples
 

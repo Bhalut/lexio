@@ -39,27 +39,34 @@ pnpm nx serve api
 
 ## Variables importantes
 
-| Variable | Uso |
-| --- | --- |
-| `DATABASE_URL` | cadena de conexión PostgreSQL |
-| `PORT` | puerto de la API |
-| `AUTH_MODE` | modo de autenticación |
-| `AUTH_APP_URL` | URL pública de la web |
-| `AUTH_POST_LOGIN_URL` | redirección después del login |
-| `AUTH_POST_LOGOUT_URL` | redirección después del logout |
-| `STORAGE_LOCAL_PATH` | carpeta local de archivos |
-| `AUTH_EMAIL_OUTBOX_PATH` | carpeta local de restablecimiento |
+| Variable                  | Uso                                                                                            |
+| ------------------------- | ---------------------------------------------------------------------------------------------- |
+| `DATABASE_URL`            | cadena de conexión PostgreSQL                                                                  |
+| `PORT`                    | puerto de la API                                                                               |
+| `AUTH_MODE`               | modo de autenticación                                                                          |
+| `AUTH_APP_URL`            | URL pública de la web                                                                          |
+| `AUTH_POST_LOGIN_URL`     | redirección después del login                                                                  |
+| `AUTH_POST_LOGOUT_URL`    | redirección después del logout                                                                 |
+| `STORAGE_LOCAL_PATH`      | carpeta local de archivos                                                                      |
+| `STORAGE_PUBLIC_BASE_URL` | URL base absoluta que se antepone a los archivos cuando se publican fuera del origen de la API |
+| `AUTH_EMAIL_OUTBOX_PATH`  | carpeta local de restablecimiento                                                              |
 
 ## Comandos
 
-| Tarea | Comando |
-| --- | --- |
-| Desarrollo | `pnpm nx serve api` |
-| Build | `pnpm nx build api` |
-| Unit tests | `pnpm nx test api --runInBand` |
-| API E2E | `pnpm nx e2e api-e2e` |
-| Migraciones | `pnpm migration:run` |
-| Seed | `pnpm seed` |
+| Tarea       | Comando                        |
+| ----------- | ------------------------------ |
+| Desarrollo  | `pnpm nx serve api`            |
+| Build       | `pnpm nx build api`            |
+| Unit tests  | `pnpm nx test api --runInBand` |
+| API E2E     | `pnpm nx e2e api-e2e`          |
+| Migraciones | `pnpm migration:run`           |
+| Seed        | `pnpm seed`                    |
+
+## Despliegue
+
+- `docker/railway/api.Dockerfile` es la definición de contenedor soportada para despliegues tipo Railway.
+- Define `STORAGE_PUBLIC_BASE_URL` cuando los archivos subidos se sirvan detrás de un CDN o un dominio dedicado distinto al origen de la API.
+- Mantén los helpers locales dentro de `scripts/` fuera de los commits de despliegue salvo que pasen a formar parte del flujo documentado de producción.
 
 ## Seguridad de comandos
 
@@ -71,20 +78,20 @@ pnpm nx serve api
 
 ## Rutas principales
 
-| Método | Ruta | Descripción |
-| --- | --- | --- |
-| `POST` | `/api/v1/auth/sessions` | iniciar sesión local |
-| `DELETE` | `/api/v1/auth/sessions/current` | cerrar sesión actual |
-| `GET` | `/api/v1/users/me` | usuario autenticado |
-| `GET` | `/api/v1/cases` | expedientes visibles |
-| `GET` | `/api/v1/cases/:caseId` | resumen del expediente |
-| `GET` | `/api/v1/cases/:caseId/document-deliveries` | listar entregas |
-| `POST` | `/api/v1/cases/:caseId/document-deliveries` | crear entrega |
-| `GET` | `/api/v1/cases/:caseId/notes` | listar notas |
-| `POST` | `/api/v1/cases/:caseId/notes` | crear nota |
-| `GET` | `/api/v1/cases/:caseId/parties` | listar partes |
-| `PATCH` | `/api/v1/cases/:caseId/parties/order` | reordenar partes |
-| `GET` | `/api/v1/cases/:caseId/activities` | listar actividad |
+| Método   | Ruta                                        | Descripción            |
+| -------- | ------------------------------------------- | ---------------------- |
+| `POST`   | `/api/v1/auth/sessions`                     | iniciar sesión local   |
+| `DELETE` | `/api/v1/auth/sessions/current`             | cerrar sesión actual   |
+| `GET`    | `/api/v1/users/me`                          | usuario autenticado    |
+| `GET`    | `/api/v1/cases`                             | expedientes visibles   |
+| `GET`    | `/api/v1/cases/:caseId`                     | resumen del expediente |
+| `GET`    | `/api/v1/cases/:caseId/document-deliveries` | listar entregas        |
+| `POST`   | `/api/v1/cases/:caseId/document-deliveries` | crear entrega          |
+| `GET`    | `/api/v1/cases/:caseId/notes`               | listar notas           |
+| `POST`   | `/api/v1/cases/:caseId/notes`               | crear nota             |
+| `GET`    | `/api/v1/cases/:caseId/parties`             | listar partes          |
+| `PATCH`  | `/api/v1/cases/:caseId/parties/order`       | reordenar partes       |
+| `GET`    | `/api/v1/cases/:caseId/activities`          | listar actividad       |
 
 ## Ejemplos de request y response
 
