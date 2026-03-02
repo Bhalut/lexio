@@ -123,7 +123,13 @@ export class DocumentsPageComponent implements OnInit, OnDestroy {
   private readonly facade = inject(DocumentsPageFacade);
 
   ngOnInit(): void {
-    this.caseId = this.route.snapshot.paramMap.get('caseId') || '';
+    this.caseId = this.route.snapshot.paramMap.get('caseId') ?? '';
+    if (!this.caseId) {
+      this.error = 'No se proporcionó un ID de expediente válido.';
+      this.loading = false;
+      return;
+    }
+
     this.currentUser = this.authState.currentUser;
     this.authSubscription = this.authState.currentUser$.subscribe({
       next: (user) => {
@@ -177,6 +183,12 @@ export class DocumentsPageComponent implements OnInit, OnDestroy {
   }
 
   loadData(): void {
+    if (!this.caseId) {
+      this.loading = false;
+      this.error = 'No se proporcionó un ID de expediente válido.';
+      return;
+    }
+
     this.loading = true;
     this.error = null;
 
@@ -196,8 +208,10 @@ export class DocumentsPageComponent implements OnInit, OnDestroy {
   }
 
   canUpload(): boolean {
+    const accessLevel = this.getCurrentCaseAccessLevel();
     return (
-      canUploadDocuments(this.currentUser, this.getCurrentCaseAccessLevel()) &&
+      Boolean(this.currentUser) &&
+      canUploadDocuments(this.currentUser, accessLevel) &&
       !this.loading &&
       this.selectedTab === 'documents'
     );
@@ -212,7 +226,9 @@ export class DocumentsPageComponent implements OnInit, OnDestroy {
       return;
     }
 
-    if (!canUploadDocuments(this.currentUser, this.getCurrentCaseAccessLevel())) {
+    if (
+      !canUploadDocuments(this.currentUser, this.getCurrentCaseAccessLevel())
+    ) {
       this.showToast(
         'Tu acceso actual permite consulta del expediente, pero no registrar nuevas entregas en este asunto.',
         'error',

@@ -2,66 +2,66 @@
 
 @theme {
   /* ── Brand: Ink / Brass ───────────────────────────────── */
-  --color-primary-50: #eef3f7;
-  --color-primary-100: #d9e3ec;
-  --color-primary-200: #b7c9d8;
-  --color-primary-300: #8da9bd;
-  --color-primary-400: #5c7e97;
-  --color-primary-500: #34526c;
-  --color-primary-600: #203f59;
-  --color-primary-700: #142a42;
-  --color-primary-800: #102236;
-  --color-primary-900: #0a1623;
+  --color-primary-50: hsl(208, 32%, 95%);
+  --color-primary-100: hsl(208, 30%, 89%);
+  --color-primary-200: hsl(208, 28%, 78%);
+  --color-primary-300: hsl(208, 26%, 65%);
+  --color-primary-400: hsl(208, 24%, 48%);
+  --color-primary-500: hsl(208, 35%, 31%);
+  --color-primary-600: hsl(208, 47%, 24%);
+  --color-primary-700: hsl(212, 53%, 17%);
+  --color-primary-800: hsl(212, 54%, 14%);
+  --color-primary-900: hsl(212, 55%, 9%);
 
   /* ── Accent: Brass / Olive ────────────────────────────── */
-  --color-accent-400: #c8a86f;
-  --color-accent-500: #a37f49;
-  --color-accent-600: #7e5b29;
+  --color-accent-400: hsl(39, 48%, 61%);
+  --color-accent-500: hsl(37, 38%, 46%);
+  --color-accent-600: hsl(35, 51%, 33%);
 
   /* ── Success ──────────────────────────────────────────── */
-  --color-success-50: #eef7f3;
-  --color-success-100: #d7ebe2;
-  --color-success-500: #4a7a64;
-  --color-success-600: #2d5a4a;
-  --color-success-700: #214d40;
+  --color-success-50: hsl(150, 40%, 95%);
+  --color-success-100: hsl(152, 35%, 88%);
+  --color-success-500: hsl(153, 25%, 38%);
+  --color-success-600: hsl(157, 25%, 26%);
+  --color-success-700: hsl(162, 40%, 22%);
 
   /* ── Warning ──────────────────────────────────────────── */
-  --color-warning-50: #fbf4e8;
-  --color-warning-100: #f1e0bf;
-  --color-warning-500: #be8a3f;
-  --color-warning-600: #8a642e;
+  --color-warning-50: hsl(38, 75%, 95%);
+  --color-warning-100: hsl(40, 65%, 85%);
+  --color-warning-500: hsl(36, 50%, 49%);
+  --color-warning-600: hsl(36, 50%, 36%);
 
   /* ── Danger ───────────────────────────────────────────── */
-  --color-danger-50: #fbefee;
-  --color-danger-100: #f4d7d4;
-  --color-danger-500: #c05c54;
-  --color-danger-600: #a63534;
+  --color-danger-50: hsl(5, 75%, 96%);
+  --color-danger-100: hsl(6, 65%, 90%);
+  --color-danger-500: hsl(5, 48%, 54%);
+  --color-danger-600: hsl(0, 52%, 43%);
 
   /* ── Surface / Neutrals ───────────────────────────────── */
-  --color-surface-50: #f7f1e8;
-  --color-surface-100: #efe5d7;
-  --color-surface-200: #dfd0bd;
-  --color-surface-300: #c8b59c;
-  --color-surface-400: #a69178;
-  --color-surface-500: #7f6a55;
-  --color-surface-600: #5e4d3f;
-  --color-surface-700: #45382e;
-  --color-surface-800: #2f261f;
-  --color-surface-900: #1d1712;
+  --color-surface-50: hsl(36, 45%, 94%);
+  --color-surface-100: hsl(37, 34%, 89%);
+  --color-surface-200: hsl(35, 27%, 81%);
+  --color-surface-300: hsl(34, 25%, 70%);
+  --color-surface-400: hsl(33, 22%, 56%);
+  --color-surface-500: hsl(31, 20%, 42%);
+  --color-surface-600: hsl(28, 20%, 31%);
+  --color-surface-700: hsl(26, 19%, 22%);
+  --color-surface-800: hsl(26, 21%, 16%);
+  --color-surface-900: hsl(25, 20%, 10%);
 
   /* ── Additional semantic tokens ───────────────────────── */
-  --color-brand-500: #a37f49;
-  --color-brand-700: #7e5b29;
-  --color-brand-800: #684718;
-  --color-ink-500: #6c6f70;
-  --color-ink-600: #4c5662;
-  --color-ink-700: #344050;
-  --color-ink-800: #243244;
-  --color-ink-900: #182434;
-  --color-ink-950: #101923;
-  --color-border-soft: rgba(24, 36, 52, 0.06);
-  --color-border: rgba(24, 36, 52, 0.1);
-  --color-border-strong: rgba(24, 36, 52, 0.18);
+  --color-brand-500: hsl(37, 38%, 46%);
+  --color-brand-700: hsl(35, 51%, 33%);
+  --color-brand-800: hsl(35, 62%, 25%);
+  --color-ink-500: hsl(195, 2%, 43%);
+  --color-ink-600: hsl(213, 13%, 34%);
+  --color-ink-700: hsl(215, 21%, 26%);
+  --color-ink-800: hsl(214, 31%, 21%);
+  --color-ink-900: hsl(215, 37%, 15%);
+  --color-ink-950: hsl(213, 37%, 10%);
+  --color-border-soft: hsla(215, 37%, 15%, 0.06);
+  --color-border: hsla(215, 37%, 15%, 0.1);
+  --color-border-strong: hsla(215, 37%, 15%, 0.18);
 
   /* ── Typography ───────────────────────────────────────── */
   --font-sans: 'Avenir Next', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
@@ -87,8 +87,13 @@ html {
 body {
   margin: 0;
   background:
-    radial-gradient(circle at top, rgba(163, 127, 73, 0.12), transparent 30%),
-    linear-gradient(180deg, #f7f1e8 0%, #f5efe5 52%, #f3ede2 100%);
+    radial-gradient(circle at top, hsla(37, 38%, 46%, 0.12), transparent 30%),
+    linear-gradient(
+      180deg,
+      hsl(36, 45%, 94%) 0%,
+      hsl(37, 34%, 89%) 52%,
+      hsl(35, 27%, 81%) 100%
+    );
   color: var(--color-ink-800);
   line-height: 1.5;
 }
@@ -228,10 +233,10 @@ body {
 
 @keyframes shimmer {
   0% {
-    background-position: 200% 0;
+    background-position: -200% 0;
   }
   100% {
-    background-position: -200% 0;
+    background-position: 200% 0;
   }
 }
 
@@ -251,10 +256,10 @@ body {
     transform: scale(1);
   }
   33% {
-    transform: scale(0.95);
+    transform: scale(0.975);
   }
   66% {
-    transform: scale(1.02);
+    transform: scale(1.012);
   }
   100% {
     transform: scale(1);
@@ -412,6 +417,16 @@ body {
   pointer-events: auto;
   animation: slideInRight 0.35s ease-out forwards;
   backdrop-filter: blur(8px);
+}
+
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 14px 30px rgba(121, 89, 42, 0.22);
+}
+
+.btn-primary:active:not(:disabled) {
+  transform: translateY(0) scale(0.96);
+  transition-duration: 100ms;
 }
 
 .toast--success {

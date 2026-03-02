@@ -13,6 +13,8 @@ import {
 import { AuthStateService } from '../../shared/services/auth-state.service';
 
 describe('DocumentsPageComponent', () => {
+  let routeCaseId: string | null = 'case-1';
+
   const currentUser$ = new BehaviorSubject<CurrentUser | null>({
     id: 'user-1',
     fullName: 'Carlos Mendoza',
@@ -37,6 +39,7 @@ describe('DocumentsPageComponent', () => {
   };
 
   beforeEach(async () => {
+    routeCaseId = 'case-1';
     api.getCaseHeader.mockReset();
     api.getDocumentDeliveries.mockReset();
     authState.handleExpiredSession.mockClear();
@@ -51,7 +54,7 @@ describe('DocumentsPageComponent', () => {
           useValue: {
             snapshot: {
               paramMap: {
-                get: (key: string) => (key === 'caseId' ? 'case-1' : null),
+                get: (key: string) => (key === 'caseId' ? routeCaseId : null),
               },
             },
           },
@@ -110,6 +113,24 @@ describe('DocumentsPageComponent', () => {
     expect(component.loading).toBe(false);
     expect(component.filteredDocuments).toHaveLength(1);
     expect(component.tabs[0].count).toBe(1);
+  });
+
+  it('fails fast when the route does not provide a case identifier', async () => {
+    routeCaseId = null;
+
+    const fixture = TestBed.createComponent(DocumentsPageComponent);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const component = fixture.componentInstance;
+    expect(component.loading).toBe(false);
+    expect(component.error).toContain('ID de expediente');
+    expect(api.getCaseHeader).not.toHaveBeenCalled();
+    expect(api.getDocumentDeliveries).not.toHaveBeenCalled();
+
+    component.loadData();
+    expect(api.getCaseHeader).not.toHaveBeenCalled();
+    expect(api.getDocumentDeliveries).not.toHaveBeenCalled();
   });
 
   it('handles expired sessions while loading the workspace', async () => {

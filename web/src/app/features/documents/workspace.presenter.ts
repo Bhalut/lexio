@@ -10,7 +10,9 @@ export interface DocumentLibraryFilters {
   sortMode: SortMode;
 }
 
-export function flattenDocuments(deliveries: DocumentDelivery[]): FlatDocument[] {
+export function flattenDocuments(
+  deliveries: DocumentDelivery[],
+): FlatDocument[] {
   return deliveries.flatMap((delivery) =>
     (delivery.documents || []).map((document) => ({
       id: document.id,
@@ -80,7 +82,11 @@ export function filterDocuments(
       );
       break;
     case 'size':
-      result.sort((left, right) => right.sizeBytes - left.sizeBytes);
+      result.sort(
+        (left, right) =>
+          toDocumentSizeBytes(right.sizeBytes) -
+          toDocumentSizeBytes(left.sizeBytes),
+      );
       break;
   }
 
@@ -105,7 +111,9 @@ export function filterDeliveries(
   });
 }
 
-export function hasActiveLibraryFilters(filters: DocumentLibraryFilters): boolean {
+export function hasActiveLibraryFilters(
+  filters: DocumentLibraryFilters,
+): boolean {
   return (
     filters.searchQuery.trim().length > 0 ||
     filters.selectedCategory !== 'all' ||
@@ -150,7 +158,7 @@ export function getFilteredSummary(
 
 export function getTotalSize(filteredDocuments: FlatDocument[]): string {
   const total = filteredDocuments.reduce(
-    (sum, document) => sum + Number(document.sizeBytes),
+    (sum, document) => sum + toDocumentSizeBytes(document.sizeBytes),
     0,
   );
   return formatSize(total);
@@ -196,9 +204,26 @@ export function getTypeLabel(mimeType: string): string {
 }
 
 export function formatSize(bytes: number): string {
-  if (bytes === 0) return '0 B';
+  if (!Number.isFinite(bytes) || bytes <= 0) {
+    return '0 B';
+  }
 
   const units = ['B', 'KB', 'MB', 'GB'];
   const index = Math.floor(Math.log(bytes) / Math.log(1024));
   return `${(bytes / 1024 ** index).toFixed(1)} ${units[index]}`;
+}
+
+function toDocumentSizeBytes(value: unknown): number {
+  const normalizedValue =
+    typeof value === 'number'
+      ? value
+      : typeof value === 'string'
+        ? Number(value)
+        : NaN;
+
+  if (!Number.isFinite(normalizedValue) || normalizedValue <= 0) {
+    return 0;
+  }
+
+  return normalizedValue;
 }

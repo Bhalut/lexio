@@ -83,7 +83,11 @@
 .btn-primary {
   border: none;
   color: #fff8ea;
-  background: linear-gradient(135deg, var(--color-brand-700), var(--color-brand-500));
+  background: linear-gradient(
+    135deg,
+    var(--color-brand-700),
+    var(--color-brand-500)
+  );
 }
 
 .btn-primary:hover:not(:disabled) {
@@ -144,8 +148,18 @@
 }
 
 .tab-btn.active {
-  background: linear-gradient(135deg, rgba(20, 42, 66, 0.95), rgba(28, 53, 78, 0.92));
-  color: #fff6e8;
+  background: linear-gradient(
+    135deg,
+    var(--color-primary-700),
+    var(--color-primary-600)
+  );
+  color: var(--color-surface-50);
+  box-shadow: 0 4px 12px rgba(20, 42, 66, 0.2);
+}
+
+.tab-btn:not(.active):hover {
+  background: rgba(255, 255, 255, 0.5);
+  transform: translateY(-1px);
 }
 
 .tab-count {
@@ -185,8 +199,14 @@
 }
 
 .insight-card--strong {
-  background: linear-gradient(160deg, rgba(20, 42, 66, 0.98), rgba(28, 53, 78, 0.94));
-  color: #fff6e8;
+  background: linear-gradient(
+    160deg,
+    var(--color-primary-700),
+    var(--color-primary-600)
+  );
+  color: var(--color-surface-50);
+  border: none;
+  box-shadow: 0 12px 28px rgba(10, 22, 35, 0.15);
 }
 
 .insight-label {
@@ -387,7 +407,12 @@
 
 .skeleton-card {
   min-height: 146px;
-  background: linear-gradient(90deg, rgba(244, 238, 228, 0.8), rgba(255, 255, 255, 0.95), rgba(244, 238, 228, 0.8));
+  background: linear-gradient(
+    90deg,
+    rgba(244, 238, 228, 0.8),
+    rgba(255, 255, 255, 0.95),
+    rgba(244, 238, 228, 0.8)
+  );
   background-size: 200% 100%;
   animation: shimmer 1.6s linear infinite;
 }
